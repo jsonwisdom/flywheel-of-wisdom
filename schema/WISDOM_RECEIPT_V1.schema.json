@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schema/WISDOM_RECEIPT_V1.schema.json",
+  "title": "WISDOM_RECEIPT_V1",
+  "description": "A single $1/60-second question-and-answer transaction record for the Flywheel of Wisdom workflow. In this build, every field marked mock_* documents that no real payment or wallet event occurred - the receipt is real (deterministically generated, replay-verifiable), but the payment behind it is synthetic.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "replay_id",
+    "question",
+    "direct_answer",
+    "known",
+    "assumed",
+    "unknown",
+    "next_move",
+    "timestamp",
+    "share_artifact_path",
+    "mock_payment"
+  ],
+  "properties": {
+    "schema_version": { "const": "WISDOM_RECEIPT_V1" },
+    "receipt_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "replay_id": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$",
+      "description": "SHA-256 of the canonical receipt content (excluding receipt_id/replay_id/timestamp themselves). Re-deriving this from the same question+answer content must produce the same value - that is what makes the receipt replay-verifiable rather than just a claim."
+    },
+    "question": { "type": "string", "minLength": 1 },
+    "direct_answer": { "type": "string", "minLength": 1 },
+    "known": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "assumed": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "unknown": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "next_move": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "share_artifact_path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Local file path to the generated share markdown. NOT a public URL - no hosting exists yet in this build."
+    },
+    "mock_payment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["is_mock", "amount_usd", "mock_reference"],
+      "properties": {
+        "is_mock": { "const": true },
+        "amount_usd": { "const": 1.0 },
+        "mock_reference": { "type": "string", "minLength": 1 }
+      },
+      "description": "is_mock is hard-locked to true at the schema level - this receipt type cannot represent a real payment without a new schema version, matching the same const-locking convention used elsewhere in this project."
+    }
+  }
+}

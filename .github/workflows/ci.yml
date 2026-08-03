@@ -1,0 +1,44 @@
+name: Flywheel CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-replay:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install jsonschema
+
+      - name: Run test suite (includes replay-verification and tamper-detection tests)
+        run: python test_flywheel.py -v
+
+      - name: Run the synthetic demo end to end
+        run: python flywheel.py
+
+      - name: Independently re-verify replay on the freshly generated receipt
+        run: |
+          python -c "
+          import json, flywheel
+          ledger = json.load(open('talley_synthetic.json'))
+          assert ledger['is_mock'] is True, 'talley must stay marked mock'
+          print('CI-side check: talley is_mock =', ledger['is_mock'])
+          "
+
+      - name: Upload generated receipts and talley as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flywheel-synthetic-output
+          path: |
+            receipts/
+            talley_synthetic.json

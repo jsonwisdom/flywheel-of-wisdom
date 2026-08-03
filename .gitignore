@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+# runtime output from running flywheel.py / test_flywheel.py directly -
+# regenerated each run. The committed, canonical example lives in examples/.
+/receipts/
+/talley_synthetic.json

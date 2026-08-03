@@ -1,0 +1,26 @@
+{
+  "assumed": [
+    "A $1 price point lowers the barrier to a first real transaction"
+  ],
+  "direct_answer": "No - a synthetic/mock version can prove the workflow end to end first.",
+  "known": [
+    "The $300 offer already required no automation to test demand",
+    "Automation was deliberately deferred until real repeated demand exists"
+  ],
+  "mock_payment": {
+    "amount_usd": 1.0,
+    "is_mock": true,
+    "mock_reference": "MOCK-eb7aac17e86e"
+  },
+  "next_move": "Run this synthetic workflow, verify it end to end, then decide whether to test it with a real (still-manual) $1 ask before building anything further.",
+  "question": "Does a $1 question-answering product need its own payment rail before launch?",
+  "receipt_id": "WR-Q-17f9c4632b8d",
+  "replay_id": "0x89466c4672b7cc8ac21e5860187ed1ebf9a005befd63b505ebd91e5a3b9d7525",
+  "schema_version": "WISDOM_RECEIPT_V1",
+  "share_artifact_path": "receipts\\WR-Q-17f9c4632b8d.md",
+  "timestamp": "2026-08-03T15:13:04Z",
+  "unknown": [
+    "Whether anyone will actually pay $1 for this without it being tested",
+    "What real questions will actually look like, as opposed to this example"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "mock_amount_usd": 1.0,
+      "receipt_id": "WR-Q-17f9c4632b8d",
+      "replay_id": "0x89466c4672b7cc8ac21e5860187ed1ebf9a005befd63b505ebd91e5a3b9d7525",
+      "timestamp": "2026-08-03T15:13:04Z"
+    }
+  ],
+  "is_mock": true,
+  "schema_version": "SYNTHETIC_TALLEY_V1"
+}

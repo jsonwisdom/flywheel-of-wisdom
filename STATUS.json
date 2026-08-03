@@ -1,0 +1,11 @@
+{
+  "product": "Jay's Flywheel of Wisdom",
+  "unit_price_usd": 1,
+  "unit_duration_seconds": 60,
+  "payment_mode": "mock",
+  "real_wallet_enabled": false,
+  "tests_passing": 12,
+  "replay_verified": true,
+  "tamper_detection_verified": true,
+  "revenue_usd": 0
+}
