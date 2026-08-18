@@ -4,7 +4,9 @@
   "source_repository": "jsonwisdom/flywheel-of-wisdom",
   "stacked_on_source_head": "de9e1dde3bda66f697671abf94f932e58a577066",
   "verifier_repository": "jsonwisdom/receipts-engine-v1",
-  "verifier_ref": "12e449ccf38113a45e3294137dbdfdd831ad9c2a",
+  "verifier_ref": "6686d093cc47a70a8e7a80adcdbd112f52210aa5",
+  "verifier_ci_run": 32100258779,
+  "verifier_ci_conclusion": "success",
   "baseline_store_release_merkle_root": "10c51683dc14f12128c472ecdda4e6a459ea6f6561ee6ec9f8459732d6e7376a",
   "trigger_scope": [
     "store/catalog/**",
