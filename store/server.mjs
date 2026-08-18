@@ -9,20 +9,20 @@ const publicDir = path.join(__dirname, "public");
 const port = Number(process.env.PORT || 3000);
 const client = process.env.OPENAI_API_KEY ? new OpenAI() : null;
 
-const catalog = [
-  {
-    name: "Flywheel of Wisdom",
-    price: "$1 synthetic/manual test",
-    status: "NOT_LIVE_CHECKOUT",
-    description: "A receipt-first question/replay workflow. The current repository payment adapter is mock-only."
-  },
-  {
-    name: "ReceiptOS Replay-Proof Report",
-    price: "$300 manual service",
-    status: "MANUAL_SERVICE_ONLY",
-    description: "A separate manual service; this storefront does not create or imply an automated payment rail."
+async function readJson(rel) {
+  return JSON.parse(await readFile(path.join(__dirname, rel), "utf8"));
+}
+
+async function loadCanonicalCatalog() {
+  const index = await readJson("catalog/catalog.json");
+  const products = [];
+  for (const entry of index.products) {
+    products.push(await readJson(entry.manifest));
   }
-];
+  return { index, products };
+}
+
+const canonicalCatalog = await loadCanonicalCatalog();
 
 function json(res, status, body) {
   res.writeHead(status, { "content-type": "application/json; charset=utf-8" });
@@ -57,10 +57,21 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/health") {
     return json(res, 200, {
       ok: true,
-      merchant_center_id: "5624520187",
+      operator_identity: canonicalCatalog.index.operator_identity,
+      merchant_center_id: canonicalCatalog.index.merchant_center_id,
       openai_configured: Boolean(client),
       payment_mode: "NOT_LIVE",
+      production_deployment: false,
       ratings_status: "NOT_VERIFIED_BY_RUNTIME"
+    });
+  }
+
+  if (req.method === "GET" && req.url === "/api/catalog") {
+    return json(res, 200, {
+      operator_identity: canonicalCatalog.index.operator_identity,
+      merchant_center_id: canonicalCatalog.index.merchant_center_id,
+      products: canonicalCatalog.products,
+      production: canonicalCatalog.index.production
     });
   }
 
@@ -82,14 +93,19 @@ const server = http.createServer(async (req, res) => {
       store: false,
       instructions: [
         "You are the JSONWisdom Store advisor.",
-        "Only describe the catalog supplied below.",
-        "Never claim checkout, payment processing, delivery, reviews, ratings, or deployment are live unless the catalog explicitly says so.",
+        "Use only the canonical product manifests supplied below.",
+        "Never claim checkout, payment processing, delivery, reviews, ratings, authority, wallet control, ENS mutation, or deployment are live unless the supplied manifests explicitly establish them.",
+        "Payment cannot buy truth or authority.",
         "Keep answers concise and receipt-first."
       ].join(" "),
-      input: `CATALOG\n${JSON.stringify(catalog, null, 2)}\n\nCUSTOMER QUESTION\n${question}`
+      input: `OPERATOR\n${canonicalCatalog.index.operator_identity}\n\nCATALOG\n${JSON.stringify(canonicalCatalog.products, null, 2)}\n\nCUSTOMER QUESTION\n${question}`
     });
 
-    return json(res, 200, { answer: response.output_text, catalog_status: catalog.map(({ name, status }) => ({ name, status })) });
+    return json(res, 200, {
+      answer: response.output_text,
+      operator_identity: canonicalCatalog.index.operator_identity,
+      catalog_status: canonicalCatalog.products.map(({ product_id, name, commercial_state }) => ({ product_id, name, commercial_state }))
+    });
   }
 
   if (req.method === "GET") return serveStatic(req, res);
