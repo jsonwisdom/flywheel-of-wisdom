@@ -1,0 +1,84 @@
+{
+  "suite": "JAYS_MONEY_MACHINE_PROFIT_ROUTING_TEST_VECTORS_V0_1",
+  "vectors": [
+    {
+      "id": "V01_BASIC_PROFIT",
+      "currency": "USD",
+      "gross": 10000,
+      "refunds": 500,
+      "chargebacks": 0,
+      "taxes_not_earned": 700,
+      "processor_fees": 300,
+      "direct_costs": 250,
+      "expected_profit": 8250,
+      "expected_jay_allocation": 8250
+    },
+    {
+      "id": "V02_FULL_REFUND",
+      "currency": "USD",
+      "gross": 10000,
+      "refunds": 10000,
+      "chargebacks": 0,
+      "taxes_not_earned": 0,
+      "processor_fees": 0,
+      "direct_costs": 0,
+      "expected_profit": 0,
+      "expected_jay_allocation": 0
+    },
+    {
+      "id": "V03_DEDUCTIONS_EXCEED_REVENUE",
+      "currency": "USD",
+      "gross": 1000,
+      "refunds": 600,
+      "chargebacks": 500,
+      "taxes_not_earned": 100,
+      "processor_fees": 50,
+      "direct_costs": 50,
+      "expected_profit": 0,
+      "expected_jay_allocation": 0
+    },
+    {
+      "id": "V04_TAX_NOT_PROFIT",
+      "currency": "USD",
+      "gross": 10700,
+      "refunds": 0,
+      "chargebacks": 0,
+      "taxes_not_earned": 700,
+      "processor_fees": 0,
+      "direct_costs": 0,
+      "expected_profit": 10000,
+      "expected_jay_allocation": 10000
+    },
+    {
+      "id": "V05_ZERO_REVENUE",
+      "currency": "USD",
+      "gross": 0,
+      "refunds": 0,
+      "chargebacks": 0,
+      "taxes_not_earned": 0,
+      "processor_fees": 0,
+      "direct_costs": 0,
+      "expected_profit": 0,
+      "expected_jay_allocation": 0
+    },
+    {
+      "id": "V06_CRYPTO_DENOMINATION_ACCOUNTING_ONLY",
+      "currency": "USDC",
+      "gross": 5000000,
+      "refunds": 0,
+      "chargebacks": 0,
+      "taxes_not_earned": 0,
+      "processor_fees": 125000,
+      "direct_costs": 250000,
+      "expected_profit": 4625000,
+      "expected_jay_allocation": 4625000
+    }
+  ],
+  "global_expected": {
+    "jay_profit_share_bps": 10000,
+    "other_profit_share_bps": 0,
+    "automatic_accounting": true,
+    "automatic_payout": false,
+    "authority_created": false
+  }
+}
