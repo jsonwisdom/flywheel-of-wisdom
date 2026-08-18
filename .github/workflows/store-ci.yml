@@ -1,0 +1,30 @@
+name: Store CI
+
+on:
+  push:
+    paths:
+      - "store/**"
+      - ".github/workflows/store-ci.yml"
+  pull_request:
+    paths:
+      - "store/**"
+      - ".github/workflows/store-ci.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: store
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --ignore-scripts
+      - run: node --check server.mjs
+      - run: node --check public/google-customer-reviews.js
+      - name: Confirm Merchant Center binding
+        run: grep -R "5624520187" README.md public/google-customer-reviews.js public/index.html
+      - name: Confirm payment boundary
+        run: grep -R "NOT_LIVE_CHECKOUT\|MANUAL_SERVICE_ONLY" server.mjs README.md
