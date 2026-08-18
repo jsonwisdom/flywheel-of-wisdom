@@ -6,9 +6,8 @@
   <meta name="description" content="JSONWisdom receipt-first research products and services.">
   <title>JSONWisdom Store</title>
   <style>
-    :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#111;background:#f7f7f4}*{box-sizing:border-box}body{margin:0}header,main,footer{max-width:1050px;margin:auto;padding:24px}.hero{padding:72px 24px 36px}.eyebrow{font-weight:800;letter-spacing:.12em;font-size:.75rem}.hero h1{font-size:clamp(2.5rem,7vw,5.5rem);line-height:.92;margin:.25em 0}.hero p{font-size:1.15rem;max-width:720px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.card{background:white;border:1px solid #ddd;border-radius:18px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.05)}.price{font-size:1.5rem;font-weight:850}.state{display:inline-block;font-size:.72rem;font-weight:800;padding:6px 8px;border:1px solid #bbb;border-radius:999px}.trust{margin-top:30px}.advisor{margin-top:30px}.advisor textarea{width:100%;min-height:92px;padding:12px;border:1px solid #bbb;border-radius:12px;font:inherit}.advisor button{margin-top:10px;padding:11px 16px;border:0;border-radius:999px;background:#111;color:#fff;font-weight:800;cursor:pointer}.answer{white-space:pre-wrap;margin-top:12px;padding:12px;background:#f0f0eb;border-radius:12px;min-height:44px}footer{font-size:.85rem;color:#555;padding-bottom:70px}code{background:#eee;padding:.15rem .35rem;border-radius:5px}
+    :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#111;background:#f7f7f4}*{box-sizing:border-box}body{margin:0}header,main,footer{max-width:1050px;margin:auto;padding:24px}.hero{padding:72px 24px 36px}.eyebrow{font-weight:800;letter-spacing:.12em;font-size:.75rem}.hero h1{font-size:clamp(2.5rem,7vw,5.5rem);line-height:.92;margin:.25em 0}.hero p{font-size:1.15rem;max-width:760px}.identity{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.pill{display:inline-block;font-size:.75rem;font-weight:800;padding:7px 10px;border:1px solid #bbb;border-radius:999px;background:#fff}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.card{background:white;border:1px solid #ddd;border-radius:18px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.05)}.price{font-size:1.5rem;font-weight:850}.state{display:inline-block;font-size:.72rem;font-weight:800;padding:6px 8px;border:1px solid #bbb;border-radius:999px}.trust,.advisor{margin-top:30px}.advisor textarea{width:100%;min-height:92px;padding:12px;border:1px solid #bbb;border-radius:12px;font:inherit}.advisor button{margin-top:10px;padding:11px 16px;border:0;border-radius:999px;background:#111;color:#fff;font-weight:800;cursor:pointer}.answer{white-space:pre-wrap;margin-top:12px;padding:12px;background:#f0f0eb;border-radius:12px;min-height:44px}footer{font-size:.85rem;color:#555;padding-bottom:70px}code{background:#eee;padding:.15rem .35rem;border-radius:5px}
   </style>
-  <!-- Google Merchant Center store widget. Google may show quality/rating information only when sufficient account data exists. -->
   <script id="merchantWidgetScript" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>
   <script>
     merchantWidgetScript.addEventListener('load', function () {
@@ -19,46 +18,80 @@
 <body>
   <header class="hero">
     <div class="eyebrow">JSONWISDOM · RECEIPT FIRST</div>
-    <h1>Build trust.<br>Keep receipts.</h1>
-    <p>A storefront for auditable research tools and manual services. Claims stay separated from receipts, and nothing on this page silently promotes a mock payment rail into a live one.</p>
+    <h1>Store for Wisdom.</h1>
+    <p>Auditable research tools and manual services. Product state comes from the catalog, while claims, receipts, payment state, and deployment state remain separate.</p>
+    <div class="identity">
+      <span class="pill">Operator: <span id="operator">loading…</span></span>
+      <span class="pill">Merchant Center: <span id="merchant">loading…</span></span>
+      <span class="pill">Production: FALSE</span>
+    </div>
   </header>
 
   <main>
-    <section class="grid" aria-label="Products">
-      <article class="card">
-        <span class="state">NOT LIVE CHECKOUT</span>
-        <h2>Flywheel of Wisdom</h2>
-        <p class="price">$1 synthetic/manual test</p>
-        <p>Question → structured response → Wisdom Receipt → deterministic replay ID. The current repository payment adapter remains mock-only.</p>
-      </article>
-      <article class="card">
-        <span class="state">MANUAL SERVICE</span>
-        <h2>ReceiptOS Replay-Proof Report</h2>
-        <p class="price">$300 manual service</p>
-        <p>A separate receipt/replay service. This storefront does not claim an automated checkout or payment processor for it.</p>
-      </article>
-    </section>
+    <section id="products" class="grid" aria-label="Products"></section>
 
     <section class="card trust">
       <h2>Store trust rail</h2>
-      <p><strong>Merchant Center ID:</strong> <code>5624520187</code></p>
-      <p>Google Customer Reviews collection is scaffolded in the order-confirmation integration. Store ratings remain a Google-calculated state and are not declared active by this site.</p>
+      <p><strong>Canonical product metadata:</strong> GitHub <code>store/</code></p>
+      <p><strong>Review storage:</strong> Google Drive <code>JSONWisdom Store</code></p>
+      <p><strong>Identity rule:</strong> <code>jaywisdom.eth</code> is the store operator/root label. It does not create wallet control, payment authority, deployment authority, or an ENS mutation.</p>
+      <p>Google Customer Reviews integration code is present. Enrollment and a Google-generated store rating remain unverified by this storefront.</p>
     </section>
 
     <section class="card advisor">
-      <h2>Ask the store advisor</h2>
-      <p>The advisor is limited to the catalog and is instructed not to invent live checkout, ratings, delivery, or deployment state.</p>
-      <textarea id="question" placeholder="What can I buy here right now?"></textarea>
+      <h2>Ask the Wisdom advisor</h2>
+      <p>The optional OpenAI advisor reads the same canonical product manifests and is instructed not to promote checkout, ratings, authority, wallet control, ENS state, or deployment.</p>
+      <textarea id="question" placeholder="What is actually available from this store?"></textarea>
       <button id="ask">Ask</button>
-      <div id="answer" class="answer" aria-live="polite">OpenAI advisor is optional and requires server-side OPENAI_API_KEY.</div>
+      <div id="answer" class="answer" aria-live="polite">The static store works without AI. The advisor requires a server-side OPENAI_API_KEY.</div>
     </section>
   </main>
 
   <footer>
-    Merchant Center configuration is not a payment processor. Google ratings, review eligibility, deployment, and checkout each require independent verification.
+    PAYMENT != TRUTH · CI_SUCCESS != PRODUCTION_DEPLOYMENT · CODE_PRESENT != PROGRAM_ENABLED
   </footer>
 
   <script>
+    function priceLabel(product) {
+      const suffix = product.price.mode === 'manual_service' ? 'manual service' : 'synthetic/manual test';
+      return `$${product.price.amount_usd} ${suffix}`;
+    }
+
+    async function loadCatalog() {
+      const response = await fetch('/catalog.json', { cache: 'no-store' });
+      if (!response.ok) throw new Error('catalog_unavailable');
+      const catalog = await response.json();
+      document.getElementById('operator').textContent = catalog.operator_identity;
+      document.getElementById('merchant').textContent = catalog.merchant_center_id;
+
+      const root = document.getElementById('products');
+      for (const product of catalog.products) {
+        const article = document.createElement('article');
+        article.className = 'card';
+
+        const state = document.createElement('span');
+        state.className = 'state';
+        state.textContent = product.commercial_state.replaceAll('_', ' ');
+
+        const title = document.createElement('h2');
+        title.textContent = product.name;
+
+        const price = document.createElement('p');
+        price.className = 'price';
+        price.textContent = priceLabel(product);
+
+        const description = document.createElement('p');
+        description.textContent = product.description;
+
+        article.append(state, title, price, description);
+        root.appendChild(article);
+      }
+    }
+
+    loadCatalog().catch(() => {
+      document.getElementById('products').textContent = 'Catalog HOLD — static catalog could not be loaded.';
+    });
+
     document.getElementById('ask').addEventListener('click', async () => {
       const q = document.getElementById('question').value.trim();
       const out = document.getElementById('answer');
