@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "verify:store": "node scripts/verify-store.mjs"
   },
   "dependencies": {
     "openai": "latest"
