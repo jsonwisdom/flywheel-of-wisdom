@@ -1,0 +1,23 @@
+{
+  "store_name": "JSONWisdom Store",
+  "operator_identity": "jaywisdom.eth",
+  "merchant_center_id": "5624520187",
+  "products": [
+    {
+      "product_id": "flywheel-of-wisdom",
+      "name": "Flywheel of Wisdom",
+      "description": "Receipt-first question and replay workflow. Current repository payment behavior remains mock-only.",
+      "price": { "amount_usd": 1, "mode": "synthetic_manual_test" },
+      "commercial_state": "NOT_LIVE_CHECKOUT"
+    },
+    {
+      "product_id": "receiptos-replay-proof-report",
+      "name": "ReceiptOS Replay-Proof Report",
+      "description": "Manual receipt and replay report service. No automated checkout is asserted by this store build.",
+      "price": { "amount_usd": 300, "mode": "manual_service" },
+      "commercial_state": "MANUAL_SERVICE_ONLY"
+    }
+  ],
+  "production_deployment": false,
+  "rating_verified": false
+}
