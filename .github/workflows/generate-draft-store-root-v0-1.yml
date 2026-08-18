@@ -36,10 +36,23 @@ jobs:
   candidate-root:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Store source
+      - name: Checkout exact proposed Store head
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+
+      - name: Bind exact Store head
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            EXPECTED_STORE_HEAD="${{ github.event.pull_request.head.sha }}"
+          else
+            EXPECTED_STORE_HEAD="$GITHUB_SHA"
+          fi
+          test "$(git rev-parse HEAD)" = "$EXPECTED_STORE_HEAD"
+          echo "STORE_PROPOSED_HEAD=$EXPECTED_STORE_HEAD"
 
       - name: Checkout pinned Receipt Engine verifier
         uses: actions/checkout@v4
@@ -63,13 +76,15 @@ jobs:
           : > changed-paths.txt
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
             BASE_SHA="${{ github.event.pull_request.base.sha }}"
-            git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > changed-paths-all.txt
+            TARGET_SHA="${{ github.event.pull_request.head.sha }}"
+            git diff --name-only "$BASE_SHA" "$TARGET_SHA" > changed-paths-all.txt
           elif [ "${GITHUB_EVENT_NAME}" = "push" ]; then
             BASE_SHA="${{ github.event.before }}"
+            TARGET_SHA="$GITHUB_SHA"
             if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
-              git diff-tree --no-commit-id --name-only -r "$GITHUB_SHA" > changed-paths-all.txt
+              git diff-tree --no-commit-id --name-only -r "$TARGET_SHA" > changed-paths-all.txt
             else
-              git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > changed-paths-all.txt
+              git diff --name-only "$BASE_SHA" "$TARGET_SHA" > changed-paths-all.txt
             fi
           else
             : > changed-paths-all.txt
@@ -140,6 +155,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: draft-store-release-candidate-${{ github.sha }}
+          name: draft-store-release-candidate-${{ github.event.pull_request.head.sha || github.sha }}
           path: _candidate/
           if-no-files-found: error
