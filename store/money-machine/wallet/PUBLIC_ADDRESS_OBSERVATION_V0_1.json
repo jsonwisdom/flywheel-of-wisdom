@@ -1,0 +1,36 @@
+{
+  "observation_id": "JAY_PUBLIC_ADDRESS_OBSERVATION_V0_1",
+  "observed_at_local": "2026-08-17T23:12:00-05:00",
+  "address": "0xA380552a27b0a5a2874Ea7AA52CAC09f542002E8",
+  "identity_label_observed": "jaywisdom.base.eth",
+  "wallet_control_verified": false,
+  "observations": {
+    "eas_base": {
+      "url": "https://base.easscan.org/address/0xA380552a27b0a5a2874Ea7AA52CAC09f542002E8",
+      "total_attestations": 54,
+      "attestations_made": 0,
+      "attestations_received": 54,
+      "all_attestations_from_single_attester": false,
+      "note": "The public EAS page shows attestations from at least 0xC345B26094c63C69222Ee775189a3d3eaead5a84 and 0x1dB2C056c7DeCD9f9fC574692b05F62aE34Fb8b5."
+    },
+    "base_activity": {
+      "activity_observed": true,
+      "example_transaction": "0xb76e53f51a7883db734bfe43047deff9391c05b1589d26d3b453ba58beebda05",
+      "example_event": "ERC4337 UserOperationEvent",
+      "sender": "0xA380552a27b0a5a2874Ea7AA52CAC09f542002E8"
+    },
+    "asset_indexing": {
+      "zero_asset_claim_admitted": false,
+      "disposition": "REJECTED_STALE_OR_INCOMPLETE",
+      "reason": "Public explorer results expose account activity and indexed Base assets; a zero-assets/zero-interactions claim cannot be treated as current fact. Exact balances remain time-sensitive and must be re-read at execution time."
+    }
+  },
+  "boundaries": [
+    "PUBLIC_INDEX != COMPLETE_LEDGER",
+    "ADDRESS_ACTIVITY != CURRENT_USER_KEY_CONTROL",
+    "EAS_IDENTITY_LABEL != BENEFICIAL_OWNERSHIP",
+    "CURRENT_BALANCE_REQUIRES_FRESH_READ",
+    "ASSET_OBSERVATION != PROFIT_RECEIPT"
+  ],
+  "authority_created": false
+}
