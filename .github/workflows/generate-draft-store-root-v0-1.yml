@@ -1,0 +1,144 @@
+name: Generate Draft Store Release Root v0.1
+
+on:
+  pull_request:
+    paths:
+      - 'store/catalog/**'
+      - 'store/products/**'
+      - 'store/money-machine/policy/**'
+      - 'store/identity/**'
+      - 'store/public/**'
+      - 'store/releases/**'
+      - 'store/schemas/**'
+      - 'store/package.json'
+      - 'store/server.mjs'
+      - 'store/automation/candidate-root/**'
+      - '.github/workflows/generate-draft-store-root-v0-1.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'store/catalog/**'
+      - 'store/products/**'
+      - 'store/money-machine/policy/**'
+      - 'store/identity/**'
+      - 'store/public/**'
+      - 'store/releases/**'
+      - 'store/schemas/**'
+      - 'store/package.json'
+      - 'store/server.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-root:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Store source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout pinned Receipt Engine verifier
+        uses: actions/checkout@v4
+        with:
+          repository: jsonwisdom/receipts-engine-v1
+          ref: 12e449ccf38113a45e3294137dbdfdd831ad9c2a
+          path: _verifier
+          fetch-depth: 1
+
+      - name: Bind verifier exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C _verifier rev-parse HEAD)" = "12e449ccf38113a45e3294137dbdfdd831ad9c2a"
+          echo "VERIFIER_REF=12e449ccf38113a45e3294137dbdfdd831ad9c2a"
+
+      - name: Determine changed commercial paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > changed-paths.txt
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > changed-paths-all.txt
+          elif [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            BASE_SHA="${{ github.event.before }}"
+            if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+              git diff-tree --no-commit-id --name-only -r "$GITHUB_SHA" > changed-paths-all.txt
+            else
+              git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > changed-paths-all.txt
+            fi
+          else
+            : > changed-paths-all.txt
+          fi
+          grep '^store/' changed-paths-all.txt | grep -v '^store/automation/' > changed-paths.txt || true
+          echo 'CHANGED_COMMERCIAL_PATHS:'
+          cat changed-paths.txt
+
+      - name: Compile pinned candidate tool
+        run: python3 -m py_compile _verifier/store-release/tools/build_candidate_root.py
+
+      - name: Build draft candidate root
+        id: candidate
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p _candidate
+          python3 _verifier/store-release/tools/build_candidate_root.py \
+            --source-root . \
+            --manifest _verifier/store-release/sources/STORE_SOURCE_MANIFEST_V0_1.json \
+            --changed-paths-file changed-paths.txt \
+            --out _candidate/candidate-root.json | tee _candidate/candidate.log
+
+      - name: Enforce non-promotion guardrails
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f _candidate/candidate-root.json
+          python3 - <<'PY'
+          import json
+          c=json.load(open('_candidate/candidate-root.json'))
+          assert c['promotion_performed'] is False
+          assert c['merge_performed'] is False
+          assert c['eas_attestation_broadcast'] is False
+          assert c['signer_used'] is False
+          assert c['payment_activated'] is False
+          assert c['brand_promotion_performed'] is False
+          assert c['authority_created'] is False
+          print('AUTO_MERGE=FALSE')
+          print('AUTO_EAS_BROADCAST=FALSE')
+          print('AUTO_SIGN=FALSE')
+          print('AUTO_PAYMENT_ACTIVATION=FALSE')
+          print('AUTO_BRAND_PROMOTION=FALSE')
+          print('AUTHORITY_CREATED=FALSE')
+          PY
+
+      - name: Write run summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Draft Store Release Candidate'
+            echo
+            echo '```text'
+            cat _candidate/candidate.log 2>/dev/null || true
+            echo '```'
+            echo
+            echo 'STORE_CHANGE != NEW_RELEASE'
+            echo
+            echo 'NEW_ROOT != APPROVED_RELEASE'
+            echo
+            echo 'CI_PASS != COMMERCIAL_PROMOTION'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload draft candidate receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: draft-store-release-candidate-${{ github.sha }}
+          path: _candidate/
+          if-no-files-found: error
