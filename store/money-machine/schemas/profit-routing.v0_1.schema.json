@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jsonwisdom.example/schemas/profit-routing.v0_1.schema.json",
+  "title": "Jay Money Machine Profit Routing Receipt v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_id",
+    "currency",
+    "gross_collected_revenue_minor",
+    "refunds_minor",
+    "chargebacks_minor",
+    "taxes_not_earned_minor",
+    "processor_fees_minor",
+    "direct_fulfillment_costs_minor",
+    "distributable_project_profit_minor",
+    "jay_allocation_minor",
+    "jay_profit_share_bps",
+    "automatic_payout_executed",
+    "authority_created"
+  ],
+  "properties": {
+    "receipt_id": {"type": "string", "minLength": 1},
+    "currency": {"type": "string", "pattern": "^[A-Z]{3,10}$"},
+    "gross_collected_revenue_minor": {"type": "integer", "minimum": 0},
+    "refunds_minor": {"type": "integer", "minimum": 0},
+    "chargebacks_minor": {"type": "integer", "minimum": 0},
+    "taxes_not_earned_minor": {"type": "integer", "minimum": 0},
+    "processor_fees_minor": {"type": "integer", "minimum": 0},
+    "direct_fulfillment_costs_minor": {"type": "integer", "minimum": 0},
+    "distributable_project_profit_minor": {"type": "integer", "minimum": 0},
+    "jay_allocation_minor": {"type": "integer", "minimum": 0},
+    "jay_profit_share_bps": {"const": 10000},
+    "beneficiary_identity_label": {"const": "jaywisdom.base.eth"},
+    "claimed_payout_address": {"const": "0xA380552a27b0a5a2874Ea7AA52CAC09f542002E8"},
+    "payout_address_control_verified": {"const": false},
+    "automatic_payout_executed": {"const": false},
+    "authority_created": {"const": false}
+  }
+}

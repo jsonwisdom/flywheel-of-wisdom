@@ -1,0 +1,41 @@
+{
+  "receipt_id": "JAYS_MONEY_MACHINE_BUILD_RECEIPT_0001",
+  "operator_root_label": "jaywisdom.eth",
+  "beneficiary_identity_label": "jaywisdom.base.eth",
+  "parent_store_pr": 1,
+  "money_machine_pr": 2,
+  "directories_first_commit": "ead5d0a40b795f5e21289335a18cde769c5fe95e",
+  "validated_head": "b34041fd8374b42354e58f0184763275aa2dd3d9",
+  "validated_head_ci": {
+    "money_machine_run_id": 32098540075,
+    "money_machine_job_id": 95594473192,
+    "money_machine_conclusion": "success",
+    "store_ci_run_id": 32098540091,
+    "store_ci_conclusion": "success",
+    "flywheel_ci_run_id": 32098540089,
+    "flywheel_ci_conclusion": "success"
+  },
+  "validated_invariants": {
+    "jay_profit_share_bps": 10000,
+    "other_profit_share_bps": 0,
+    "automatic_accounting": true,
+    "automatic_payout": false,
+    "wallet_control_verified": false,
+    "payment_processor_live": false,
+    "model_execution_performed": false,
+    "authority_created": false
+  },
+  "wallet_observation": {
+    "address": "0xA380552a27b0a5a2874Ea7AA52CAC09f542002E8",
+    "eas_received": 54,
+    "eas_made": 0,
+    "base_activity_observed": true,
+    "prior_zero_asset_zero_activity_inventory": "REJECTED_STALE_OR_INCOMPLETE"
+  },
+  "receipt_commit_requires_subsequent_exact_head_replay": true,
+  "merge_authorized": false,
+  "production_deployment": false,
+  "payment_activation": false,
+  "onchain_payout_executed": false,
+  "authority_created": false
+}

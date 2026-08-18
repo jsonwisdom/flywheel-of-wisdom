@@ -1,0 +1,30 @@
+{
+  "contract_id": "JAYS_MONEY_MACHINE_OPENAI_CONTRACT_V0_1",
+  "role": "OPTIONAL_COMMERCIAL_EXPLANATION_SIDECAR",
+  "model_required": false,
+  "api_key_required_for_core": false,
+  "model_execution_performed": false,
+  "api_key_stored_in_repository": false,
+  "deterministic_accounting_is_authoritative_for_project_state": true,
+  "allowed": [
+    "explain bounded accounting receipts",
+    "summarize product catalog information",
+    "explain why payout is held",
+    "format human-readable revenue and profit reports"
+  ],
+  "forbidden": [
+    "change Jay profit share",
+    "add another profit beneficiary",
+    "execute or authorize a payment",
+    "claim wallet key control from an address label or attestation",
+    "invent settled funds",
+    "treat public explorer indexing as complete ledger truth",
+    "classify taxes or legal ownership",
+    "turn payment into proof or authority"
+  ],
+  "automatic_accounting": true,
+  "automatic_payout": false,
+  "payment_activation": false,
+  "production_deployment": false,
+  "authority_created": false
+}

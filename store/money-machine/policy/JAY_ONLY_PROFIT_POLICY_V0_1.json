@@ -1,0 +1,49 @@
+{
+  "policy_id": "JAYS_MONEY_MACHINE_PROFIT_POLICY_V0_1",
+  "operator_root_label": "jaywisdom.eth",
+  "beneficiary_identity_label": "jaywisdom.base.eth",
+  "beneficiaries": [
+    {
+      "id": "JAY",
+      "profit_share_bps": 10000,
+      "claimed_payout_address": "0xA380552a27b0a5a2874Ea7AA52CAC09f542002E8",
+      "payout_address_control_verified": false
+    }
+  ],
+  "other_profit_share_bps": 0,
+  "profit_formula": {
+    "gross_collected_revenue": "INPUT",
+    "subtract": [
+      "refunds",
+      "chargebacks",
+      "sales_tax_or_similar_amounts_not_earned_by_store",
+      "processor_fees",
+      "direct_fulfillment_costs"
+    ],
+    "result": "distributable_project_profit"
+  },
+  "automatic_accounting": true,
+  "automatic_payout": false,
+  "payout_eligibility_requires": [
+    "payment_processor_live",
+    "settled_funds_receipt",
+    "beneficiary_identity_bound",
+    "payout_address_control_verified",
+    "payout_instruction_authorized",
+    "applicable_compliance_or_tax_holds_cleared"
+  ],
+  "payment_processor_live": false,
+  "settled_funds_receipt_bound": false,
+  "production_deployment": false,
+  "authority_created": false,
+  "boundaries": [
+    "REVENUE != PROFIT",
+    "ALLOCATION != TRANSFER",
+    "ADDRESS_LABEL != KEY_CONTROL",
+    "EAS_ATTESTATION != WALLET_CONTROL",
+    "PUBLIC_BALANCE != BENEFICIAL_OWNERSHIP",
+    "PROFIT_POLICY != TAX_ADVICE",
+    "PAYMENT != TRUTH",
+    "PRODUCT_PURCHASE != AUTHORITY"
+  ]
+}
