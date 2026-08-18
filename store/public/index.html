@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="JSONWisdom receipt-first research products and services.">
+  <title>JSONWisdom Store</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#111;background:#f7f7f4}*{box-sizing:border-box}body{margin:0}header,main,footer{max-width:1050px;margin:auto;padding:24px}.hero{padding:72px 24px 36px}.eyebrow{font-weight:800;letter-spacing:.12em;font-size:.75rem}.hero h1{font-size:clamp(2.5rem,7vw,5.5rem);line-height:.92;margin:.25em 0}.hero p{font-size:1.15rem;max-width:720px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.card{background:white;border:1px solid #ddd;border-radius:18px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.05)}.price{font-size:1.5rem;font-weight:850}.state{display:inline-block;font-size:.72rem;font-weight:800;padding:6px 8px;border:1px solid #bbb;border-radius:999px}.trust{margin-top:30px}.advisor{margin-top:30px}.advisor textarea{width:100%;min-height:92px;padding:12px;border:1px solid #bbb;border-radius:12px;font:inherit}.advisor button{margin-top:10px;padding:11px 16px;border:0;border-radius:999px;background:#111;color:#fff;font-weight:800;cursor:pointer}.answer{white-space:pre-wrap;margin-top:12px;padding:12px;background:#f0f0eb;border-radius:12px;min-height:44px}footer{font-size:.85rem;color:#555;padding-bottom:70px}code{background:#eee;padding:.15rem .35rem;border-radius:5px}
+  </style>
+  <!-- Google Merchant Center store widget. Google may show quality/rating information only when sufficient account data exists. -->
+  <script id="merchantWidgetScript" src="https://www.gstatic.com/shopping/merchant/merchantwidget.js" defer></script>
+  <script>
+    merchantWidgetScript.addEventListener('load', function () {
+      merchantwidget.start({ position: 'RIGHT_BOTTOM' });
+    });
+  </script>
+</head>
+<body>
+  <header class="hero">
+    <div class="eyebrow">JSONWISDOM · RECEIPT FIRST</div>
+    <h1>Build trust.<br>Keep receipts.</h1>
+    <p>A storefront for auditable research tools and manual services. Claims stay separated from receipts, and nothing on this page silently promotes a mock payment rail into a live one.</p>
+  </header>
+
+  <main>
+    <section class="grid" aria-label="Products">
+      <article class="card">
+        <span class="state">NOT LIVE CHECKOUT</span>
+        <h2>Flywheel of Wisdom</h2>
+        <p class="price">$1 synthetic/manual test</p>
+        <p>Question → structured response → Wisdom Receipt → deterministic replay ID. The current repository payment adapter remains mock-only.</p>
+      </article>
+      <article class="card">
+        <span class="state">MANUAL SERVICE</span>
+        <h2>ReceiptOS Replay-Proof Report</h2>
+        <p class="price">$300 manual service</p>
+        <p>A separate receipt/replay service. This storefront does not claim an automated checkout or payment processor for it.</p>
+      </article>
+    </section>
+
+    <section class="card trust">
+      <h2>Store trust rail</h2>
+      <p><strong>Merchant Center ID:</strong> <code>5624520187</code></p>
+      <p>Google Customer Reviews collection is scaffolded in the order-confirmation integration. Store ratings remain a Google-calculated state and are not declared active by this site.</p>
+    </section>
+
+    <section class="card advisor">
+      <h2>Ask the store advisor</h2>
+      <p>The advisor is limited to the catalog and is instructed not to invent live checkout, ratings, delivery, or deployment state.</p>
+      <textarea id="question" placeholder="What can I buy here right now?"></textarea>
+      <button id="ask">Ask</button>
+      <div id="answer" class="answer" aria-live="polite">OpenAI advisor is optional and requires server-side OPENAI_API_KEY.</div>
+    </section>
+  </main>
+
+  <footer>
+    Merchant Center configuration is not a payment processor. Google ratings, review eligibility, deployment, and checkout each require independent verification.
+  </footer>
+
+  <script>
+    document.getElementById('ask').addEventListener('click', async () => {
+      const q = document.getElementById('question').value.trim();
+      const out = document.getElementById('answer');
+      if (!q) return;
+      out.textContent = 'Checking the bounded catalog…';
+      try {
+        const r = await fetch('/api/advisor', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:q})});
+        const data = await r.json();
+        out.textContent = data.answer || data.error || 'No answer returned.';
+      } catch { out.textContent = 'Advisor unavailable. The storefront remains usable without AI.'; }
+    });
+  </script>
+</body>
+</html>
