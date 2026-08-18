@@ -1,0 +1,21 @@
+{
+  "schema_version": "product-manifest.v0.1",
+  "product_id": "flywheel-of-wisdom",
+  "name": "Flywheel of Wisdom",
+  "description": "Receipt-first question and replay workflow. Current repository payment behavior remains mock-only.",
+  "operator_identity": "jaywisdom.eth",
+  "price": {
+    "amount_usd": 1,
+    "mode": "synthetic_manual_test"
+  },
+  "commercial_state": "NOT_LIVE_CHECKOUT",
+  "payment_processor_live": false,
+  "artifact_bundle_state": "NOT_RELEASED",
+  "checksums": [],
+  "production_deployment": false,
+  "authority_created": false,
+  "notes": [
+    "The existing Flywheel pipeline is synthetic and receipt-oriented.",
+    "A displayed price does not imply an active checkout or payment processor."
+  ]
+}
