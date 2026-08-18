@@ -1,0 +1,45 @@
+{
+  "policy_id": "STORE_CANDIDATE_ROOT_WATCHER_V0_1",
+  "classification": "DRAFT_ONLY_COMMERCIAL_STATE_WATCHER",
+  "source_repository": "jsonwisdom/flywheel-of-wisdom",
+  "stacked_on_source_head": "de9e1dde3bda66f697671abf94f932e58a577066",
+  "verifier_repository": "jsonwisdom/receipts-engine-v1",
+  "verifier_ref": "6686d093cc47a70a8e7a80adcdbd112f52210aa5",
+  "verifier_ci_run": 32100258779,
+  "verifier_ci_conclusion": "success",
+  "baseline_store_release_merkle_root": "10c51683dc14f12128c472ecdda4e6a459ea6f6561ee6ec9f8459732d6e7376a",
+  "trigger_scope": [
+    "store/catalog/**",
+    "store/products/**",
+    "store/money-machine/policy/**",
+    "store/identity/**",
+    "store/public/**",
+    "store/releases/**",
+    "store/schemas/**",
+    "store/package.json",
+    "store/server.mjs"
+  ],
+  "non_commercial_automation_prefixes": [
+    "store/automation/"
+  ],
+  "topology_rule": "NEW_COMMERCIAL_PATH_OUTSIDE_DECLARED_V0_1_LEAF_SET => HOLD_TOPOLOGY_CHANGE",
+  "candidate_rule": "CURRENT_DECLARED_LEAF_BYTES => DRAFT_CANDIDATE_ROOT",
+  "auto_detect_change": true,
+  "auto_build_root": true,
+  "auto_generate_receipt_artifact": true,
+  "auto_merge": false,
+  "auto_eas_broadcast": false,
+  "auto_sign": false,
+  "auto_payment_activation": false,
+  "auto_payout": false,
+  "auto_brand_promotion": false,
+  "production_deployment": false,
+  "authority_created": false,
+  "boundaries": [
+    "STORE_CHANGE != NEW_RELEASE",
+    "NEW_ROOT != APPROVED_RELEASE",
+    "CI_PASS != COMMERCIAL_PROMOTION",
+    "CANDIDATE_ROOT != EAS_ATTESTATION",
+    "MERKLE_INCLUSION != WORLD_TRUE"
+  ]
+}
