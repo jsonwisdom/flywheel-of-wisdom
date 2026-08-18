@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: jsonwisdom/receipts-engine-v1
-          ref: 12e449ccf38113a45e3294137dbdfdd831ad9c2a
+          ref: 6686d093cc47a70a8e7a80adcdbd112f52210aa5
           path: _verifier
           fetch-depth: 1
 
@@ -53,8 +53,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git -C _verifier rev-parse HEAD)" = "12e449ccf38113a45e3294137dbdfdd831ad9c2a"
-          echo "VERIFIER_REF=12e449ccf38113a45e3294137dbdfdd831ad9c2a"
+          test "$(git -C _verifier rev-parse HEAD)" = "6686d093cc47a70a8e7a80adcdbd112f52210aa5"
+          echo "VERIFIER_REF=6686d093cc47a70a8e7a80adcdbd112f52210aa5"
 
       - name: Determine changed commercial paths
         shell: bash
@@ -109,6 +109,7 @@ jobs:
           assert c['payment_activated'] is False
           assert c['brand_promotion_performed'] is False
           assert c['authority_created'] is False
+          assert c['non_commercial_prefixes'] == ['store/automation/']
           print('AUTO_MERGE=FALSE')
           print('AUTO_EAS_BROADCAST=FALSE')
           print('AUTO_SIGN=FALSE')
