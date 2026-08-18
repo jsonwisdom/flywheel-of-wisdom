@@ -1,0 +1,45 @@
+name: Jay's Money Machine v0.1
+
+on:
+  pull_request:
+    paths:
+      - 'store/money-machine/**'
+      - '.github/workflows/jays-money-machine-v0-1.yml'
+  push:
+    branches:
+      - 'agent/jays-money-machine-profit-router-v0-1'
+    paths:
+      - 'store/money-machine/**'
+      - '.github/workflows/jays-money-machine-v0-1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Replay Jay-only profit accounting
+        run: node store/money-machine/scripts/verify_money_machine_v0_1.mjs
+
+      - name: Preserve Store v0.1 boundaries
+        run: node store/scripts/verify-store.mjs
+
+      - name: Fail closed on payout activation
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const policy = JSON.parse(fs.readFileSync('store/money-machine/policy/JAY_ONLY_PROFIT_POLICY_V0_1.json', 'utf8'));
+          const wallet = JSON.parse(fs.readFileSync('store/money-machine/wallet/PUBLIC_ADDRESS_OBSERVATION_V0_1.json', 'utf8'));
+          const ai = JSON.parse(fs.readFileSync('store/money-machine/openai/agent_contract.json', 'utf8'));
+          if (policy.beneficiaries.length !== 1 || policy.beneficiaries[0].id !== 'JAY') throw new Error('Jay-only beneficiary membrane failed');
+          if (policy.beneficiaries[0].profit_share_bps !== 10000 || policy.other_profit_share_bps !== 0) throw new Error('profit share membrane failed');
+          if (policy.automatic_payout !== false || policy.payment_processor_live !== false) throw new Error('payout activation forbidden');
+          if (wallet.wallet_control_verified !== false) throw new Error('wallet control cannot be promoted');
+          if (ai.model_execution_performed !== false || ai.payment_activation !== false) throw new Error('OpenAI/payment boundary failed');
+          console.log('JAYS_MONEY_MACHINE_MEMBRANES=PASS');
+          NODE
