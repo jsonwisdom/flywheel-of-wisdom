@@ -7,6 +7,6 @@
     "start": "node server.mjs"
   },
   "dependencies": {
-    "openai": "^6.0.0"
+    "openai": "latest"
   }
 }
