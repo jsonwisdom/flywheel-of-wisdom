@@ -1,0 +1,15 @@
+{
+  "schema_version": "payment_evidence.v1",
+  "object_id": "UNBOUND",
+  "price_usd": 1,
+  "network": "eip155:8453",
+  "pay_to": "0xa380552a27b0a5a2874ea7aa52cac09f542002e8",
+  "pay_to_ens_label": "jaywisdom.base.eth",
+  "settlement_tx": null,
+  "state": "UNPAID_KNOWLEDGE_402",
+  "engine_status": null,
+  "manifest_root": null,
+  "binary_merkle_root": null,
+  "proof": null,
+  "notes": "Empty template. settlement_tx is null. revenue_usd remains 0. ens_label ≠ identity. AUTHORITY_CREATED=false."
+}

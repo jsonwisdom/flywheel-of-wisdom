@@ -1,0 +1,28 @@
+{
+  "$id": "payment_evidence.v1",
+  "title": "PaymentEvidence",
+  "description": "Sole lawful state-changing object for the $1 rail. Template only until settlement_tx is on-chain verifiable. mechanism ≠ economic ≠ settlement. AUTHORITY_CREATED=false.",
+  "type": "object",
+  "required": ["schema_version", "object_id", "price_usd", "network", "pay_to", "settlement_tx", "state"],
+  "properties": {
+    "schema_version": { "const": "payment_evidence.v1" },
+    "object_id": { "type": "string" },
+    "price_usd": { "type": "number", "const": 1 },
+    "network": { "type": "string", "const": "eip155:8453" },
+    "pay_to": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+    "settlement_tx": {
+      "type": ["object", "null"],
+      "properties": {
+        "tx_hash": { "type": "string", "pattern": "^0x[a-fA-F0-9]{64}$" },
+        "verified_on_chain": { "type": "boolean" }
+      }
+    },
+    "state": {
+      "enum": [
+        "UNPAID_KNOWLEDGE_402",
+        "PENDING_PAYMENT_GATE",
+        "PAYMENT_RECEIVED_PENDING_RECONCILIATION"
+      ]
+    }
+  }
+}
