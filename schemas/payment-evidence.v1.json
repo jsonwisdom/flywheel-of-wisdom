@@ -1,0 +1,28 @@
+{
+  "$id": "payment-evidence.v1",
+  "title": "PaymentEvidenceV1",
+  "description": "Payment-only. No identity, EAS, ENS bind, Cluster A, emails, org IDs. verified ≠ revenue.",
+  "type": "object",
+  "required": ["schema_version", "object_id", "tx_hash", "chain_id", "token_address", "amount_base_units", "pay_to", "verified_on_chain", "state"],
+  "properties": {
+    "schema_version": { "const": "payment_evidence.v1" },
+    "evidence_id": { "type": "string" },
+    "object_id": { "type": "string" },
+    "tx_hash": { "type": ["string", "null"] },
+    "chain_id": { "const": 8453 },
+    "token_address": { "type": "string" },
+    "amount_base_units": { "type": "string" },
+    "pay_to": { "type": "string" },
+    "receipt_status": { "type": ["integer", "null"] },
+    "block_number": { "type": ["string", "null"] },
+    "confirmations": { "type": ["number", "null"] },
+    "transfer_log_index": { "type": ["number", "null"] },
+    "verified_on_chain": { "type": "boolean" },
+    "verification_reason": { "type": "string" },
+    "verified_at": { "type": ["string", "null"] },
+    "replay_hash": { "type": ["string", "null"] },
+    "state": {
+      "enum": ["UNPAID_KNOWLEDGE_402", "PENDING_PAYMENT_GATE", "PAYMENT_RECEIVED_PENDING_RECONCILIATION"]
+    }
+  }
+}
