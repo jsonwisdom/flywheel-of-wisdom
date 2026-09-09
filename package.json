@@ -1,0 +1,26 @@
+{
+  "name": "flywheel-of-wisdom-x402",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Real x402 payment rail for Wisdom Receipts on Base mainnet. Settles to jaywisdom.base.eth.",
+  "scripts": {
+    "start": "tsx server.ts",
+    "dev": "tsx watch server.ts",
+    "test:402": "powershell -ExecutionPolicy Bypass -File ./scripts/test-402.ps1"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@coinbase/cdp-sdk": "^1.0.0",
+    "@x402/core": "^0.5.0",
+    "@x402/evm": "^0.5.0",
+    "@x402/express": "^0.5.0",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

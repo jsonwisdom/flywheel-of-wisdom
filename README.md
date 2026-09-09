@@ -1,44 +1,55 @@
-# Flywheel of Wisdom — synthetic workflow (local, mock, not deployed)
+# Flywheel of Wisdom — x402 payment rail (Base mainnet)
 
-This is the smallest complete **synthetic** version of the $1/60-second
-Wisdom Receipt pipeline:
+Real **$1 USDC** payments on **Base mainnet**, settled to
+`jaywisdom.base.eth` → `0xa380552a27b0a5a2874ea7aa52cac09f542002e8`.
+
+The synthetic `MockPaymentAdapter` is gone. This is version 2: real
+payments only.
+
+## Flow
 
 ```text
-QUESTION_SUBMITTED -> MOCK_$1_ACCEPTED -> 60_SECOND_RESPONSE ->
-WISDOM_RECEIPT_GENERATED -> REPLAY_ID_CREATED -> SHARE_ARTIFACT_CREATED ->
-TALLEY_UPDATED
+GET /receipt  →  402 Payment Required (price, USDC, Base, payTo)
+       ↓
+client signs gasless USDC authorization
+       ↓
+CDP Facilitator verifies + settles on Base (~1s)
+       ↓
+200 OK + receipt with real settlement tx hash
 ```
 
-## What's real here and what isn't
+## Setup (PowerShell)
 
-- **Real:** the pipeline logic, the receipt schema, the deterministic
-  replay-id (a SHA-256 of the receipt's own content - re-derive it from
-  the same inputs and it matches), the generated markdown share artifact,
-  the local synthetic ledger, and the test suite (12 tests, all passing).
-- **Mock, explicitly:** `MockPaymentAdapter` never touches a real payment
-  rail - there isn't one wired in. Every mock payment is hard-marked
-  `is_mock: true` at both the code and schema level (the schema `const`s
-  it, so this can't silently become "real" without a new schema version).
-  `talley_synthetic.json` is a separate file from the real business
-  scoreboard tracked elsewhere in this project - nothing in it should ever
-  be read as evidence of real revenue.
-- **Not built:** wallet integration, real payment processing, actual
-  60-second timing enforcement, automated answer generation (the
-  direct_answer/known/assumed/unknown/next_move content is always
-  supplied by the caller - this module structures it, it doesn't invent
-  wisdom).
-
-## Run it
-
-```bash
-python flywheel.py        # runs one synthetic example end to end
-python test_flywheel.py   # 12 tests
+```powershell
+.\scripts\setup-mainnet.ps1
+# edit .env → CDP_API_KEY_ID, CDP_API_KEY_SECRET
+npm start
+.\scripts\test-402.ps1    # expect 402
 ```
 
-## Relationship to other work in this project
+Needs **Node 22+**. Get a CDP API key at
+https://portal.cdp.coinbase.com/api-keys/secret.
 
-- Does not touch `receiptos-base`.
-- Does not merge or read from the `ask-jay-redesign` branch.
-- Entirely separate from the live `$300` Permission Revocation offer in
-  `receiptos-replay-proof` - nothing here changes that offer.
-- Not yet under git version control and not published anywhere.
+## Test the 402 challenge
+
+```powershell
+curl -i http://localhost:8402/receipt
+# HTTP/1.1 402 Payment Required
+```
+
+## Pay once (real funds)
+
+Use any x402-compatible client (Coinbase Wallet, Base MCP, or
+`@x402/fetch`) pointed at `http://localhost:8402/receipt` with a max
+payment of `$1.00`. The deposit lands at jaywisdom.base.eth.
+
+## What's here
+
+- `server.ts` — Express + CDP x402 server, production/mainnet
+- `scripts/setup-mainnet.ps1` — one-shot install + env bootstrap
+- `scripts/test-402.ps1` — unpaid probe, asserts 402
+- `.env.example` — required secrets
+
+The Python receipt schema, replay-id, and share-artifact logic in
+`flywheel.py` are unchanged — this rail is the payment layer that feeds
+them real settlement hashes instead of `MOCK-` references.

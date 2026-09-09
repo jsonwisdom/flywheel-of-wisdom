@@ -2,10 +2,16 @@
   "product": "Jay's Flywheel of Wisdom",
   "unit_price_usd": 1,
   "unit_duration_seconds": 60,
-  "payment_mode": "mock",
-  "real_wallet_enabled": false,
+  "payment_mode": "x402-mainnet",
+  "payment_rail": "CDP Facilitator / x402",
+  "network": "base-mainnet (eip155:8453)",
+  "pay_to": "0xa380552a27b0a5a2874ea7aa52cac09f542002e8",
+  "pay_to_ens": "jaywisdom.base.eth",
+  "real_wallet_enabled": true,
+  "mock_adapter_removed": true,
   "tests_passing": 12,
   "replay_verified": true,
   "tamper_detection_verified": true,
-  "revenue_usd": 0
+  "revenue_usd": 0,
+  "notes": "Rail wired and pushed. Deploy + first real $1 settlement still pending operator action."
 }
