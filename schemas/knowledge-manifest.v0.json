@@ -1,0 +1,6 @@
+{
+  "$id": "knowledge-manifest.v0",
+  "title": "KnowledgeManifest",
+  "type": "object",
+  "required": ["id", "type", "object_id", "version_id", "entries"]
+}

@@ -1,0 +1,6 @@
+{
+  "$id": "knowledge-object.v0",
+  "title": "KnowledgeObject",
+  "type": "object",
+  "required": ["id", "type", "version", "content_hash"]
+}

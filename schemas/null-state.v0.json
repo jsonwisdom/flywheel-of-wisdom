@@ -1,0 +1,5 @@
+{
+  "$id": "null-state.v0",
+  "title": "FieldState",
+  "enum": ["PRESENT", "MISSING", "UNKNOWN", "NOT_APPLICABLE", "NOT_REQUESTED", "NOT_LOADED", "UNVERIFIED", "CONFLICT", "REDACTED", "DELETED", "UNAVAILABLE"]
+}
