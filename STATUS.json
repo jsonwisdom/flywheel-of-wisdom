@@ -9,9 +9,10 @@
   "pay_to_ens": "jaywisdom.base.eth",
   "real_wallet_enabled": true,
   "mock_adapter_removed": true,
+  "knowledge_pipeline": "v0.1-src",
   "tests_passing": 12,
   "replay_verified": true,
   "tamper_detection_verified": true,
   "revenue_usd": 0,
-  "notes": "Rail wired and pushed. Deploy + first real $1 settlement still pending operator action."
+  "notes": "Knowledge/null/manifest pipeline added under src/. GET /knowledge on same $1 rail. flywheel.py remains synthetic fixture. First real $1 settlement still pending. pay_to_ens is a label not identity. AUTHORITY_CREATED=false."
 }
