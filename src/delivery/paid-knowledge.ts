@@ -3,6 +3,8 @@ import { makeEntry, makeManifest } from "../knowledge/knowledge-manifest";
 import { buildTree, prove, type MerkleProof } from "../knowledge/merkle-proof";
 import { entryLeaves } from "../knowledge/manifest-merkle-bridge";
 
+export type PaidObjectType = "answer" | "document" | "receipt";
+
 export interface PaidKnowledgeResult {
   object_id: string;
   version_id: string;
@@ -19,20 +21,27 @@ export interface PaidKnowledgeResult {
 export function deliverPaidKnowledge(args: {
   object_id: string;
   body: string;
-  type?: "answer" | "document" | "receipt";
+  type?: PaidObjectType;
   settlement_tx: string | null;
 }): PaidKnowledgeResult {
   const version_id = "v0.1.0";
+  const objectType: PaidObjectType = args.type ?? "answer";
   const { object, engine } = ingest({
     id: args.object_id,
-    type: args.type ?? "answer",
+    type: objectType,
     version: version_id,
     bytes: args.body,
     media_type: "text/plain",
     payment_class: "x402",
     provenance: "x402-settlement-pending-verification",
   });
-  const entry = makeEntry(`${args.object_id}.txt`, args.object_id, version_id, args.body, "answer");
+  const entry = makeEntry(
+    `${args.object_id}.txt`,
+    args.object_id,
+    version_id,
+    args.body,
+    objectType
+  );
   const manifest = makeManifest({ object_id: args.object_id, version_id, entries: [entry] });
   const { leaves } = entryLeaves(manifest.entries);
   const { root: binaryRoot } = buildTree(leaves);
