@@ -1,5 +1,8 @@
 __pycache__/
 *.pyc
+.env
+.env.*
+!.env.example
 # runtime output from running flywheel.py / test_flywheel.py directly -
 # regenerated each run. The committed, canonical example lives in examples/.
 /receipts/
