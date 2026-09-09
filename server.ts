@@ -1,19 +1,15 @@
 /**
  * Flywheel of Wisdom — x402 payment rail (Base mainnet)
+ * + paid knowledge object delivery (null-engine + manifest + merkle)
  *
- * Replaces the synthetic MockPaymentAdapter. Every paid request now:
- *   1. Returns HTTP 402 with payment requirements (price, USDC, Base, payTo)
- *   2. Client signs a gasless USDC authorization
- *   3. CDP Facilitator verifies + settles on Base mainnet
- *   4. Receipt is generated with the real settlement tx hash
- *
- * Pay-to: jaywisdom.base.eth → 0xa380552a27b0a5a2874ea7aa52cac09f542002e8
- * Price: $1.00 USDC per Wisdom Receipt
+ * Pay-to label jaywisdom.base.eth is naming display on the payment rail.
+ * It is not JASON_STATE and does not bind Cluster A.
  */
 import "dotenv/config";
 import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
 import { paymentMiddlewareFromHTTPServer } from "@x402/express";
+import { deliverPaidKnowledge } from "./src/delivery/paid-knowledge";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -26,16 +22,22 @@ const app = express();
 app.use(express.json());
 
 const server = await createX402Server({
-  environment: "production", // mainnet, real funds
+  environment: "production",
   payToConfig: {
     type: "address",
-    evm: PAY_TO, // one EVM address covers all supported EVM networks
+    evm: PAY_TO,
   },
   routes: {
     "GET /receipt": {
       price: "$1.00",
-      networks: ["eip155:8453"], // Base mainnet
-      description: "One Wisdom Receipt — $1 USDC on Base, settled to jaywisdom.base.eth",
+      networks: ["eip155:8453"],
+      description: "One Wisdom Receipt — $1 USDC on Base",
+      mimeType: "application/json",
+    },
+    "GET /knowledge": {
+      price: "$1.00",
+      networks: ["eip155:8453"],
+      description: "One KnowledgeObject bundle — $1 USDC on Base",
       mimeType: "application/json",
     },
   },
@@ -43,7 +45,6 @@ const server = await createX402Server({
 
 app.use(paymentMiddlewareFromHTTPServer(server));
 
-// Protected route: only reachable after a valid, settled x402 payment.
 app.get("/receipt", (_req, res) => {
   const settlement = (res.locals as any).payment?.settlement ?? null;
   res.json({
@@ -52,15 +53,29 @@ app.get("/receipt", (_req, res) => {
     price_usd: 1.0,
     network: "base-mainnet",
     pay_to: PAY_TO,
-    ens: "jaywisdom.base.eth",
+    ens_label: "jaywisdom.base.eth",
     settlement_tx: settlement?.transaction ?? settlement?.txHash ?? null,
-    note: "Payment verified and settled by the CDP Facilitator on Base.",
+    note: "Payment verified by CDP Facilitator. ens_label ≠ operator identity.",
   });
+});
+
+app.get("/knowledge", (req, res) => {
+  const settlement = (res.locals as any).payment?.settlement ?? null;
+  const objectId = typeof req.query.object_id === "string" ? req.query.object_id : "answer:default";
+  const body =
+    typeof req.query.q === "string" && req.query.q.trim()
+      ? req.query.q
+      : "KnowledgeObject v0.1 default body. Replace via ?q=";
+  const result = deliverPaidKnowledge({
+    object_id: objectId,
+    body,
+    settlement_tx: settlement?.transaction ?? settlement?.txHash ?? null,
+  });
+  res.json({ ok: true, ...result });
 });
 
 const PORT = Number(process.env.PORT ?? 8402);
 app.listen(PORT, () => {
   console.log(`Flywheel x402 rail live on http://localhost:${PORT}`);
-  console.log(`Receiving $1 USDC on Base mainnet at ${PAY_TO} (jaywisdom.base.eth)`);
-  console.log(`Unpaid probe: curl -i http://localhost:${PORT}/receipt  → expect 402`);
+  console.log(`GET /receipt and GET /knowledge are $1 USDC on Base (${PAY_TO})`);
 });
