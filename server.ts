@@ -9,7 +9,7 @@ import "dotenv/config";
 import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
 import { paymentMiddlewareFromHTTPServer } from "@x402/express";
-import { deliverPaidKnowledge } from "./src/delivery/paid-knowledge";
+import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -45,6 +45,11 @@ const server = await createX402Server({
 
 app.use(paymentMiddlewareFromHTTPServer(server));
 
+function parsePaidType(raw: unknown): PaidObjectType {
+  if (raw === "document" || raw === "receipt" || raw === "answer") return raw;
+  return "answer";
+}
+
 app.get("/receipt", (_req, res) => {
   const settlement = (res.locals as any).payment?.settlement ?? null;
   res.json({
@@ -69,6 +74,7 @@ app.get("/knowledge", (req, res) => {
   const result = deliverPaidKnowledge({
     object_id: objectId,
     body,
+    type: parsePaidType(req.query.type),
     settlement_tx: settlement?.transaction ?? settlement?.txHash ?? null,
   });
   res.json({ ok: true, ...result });
