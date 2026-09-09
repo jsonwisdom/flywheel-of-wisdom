@@ -9,21 +9,17 @@ Write-Host "Probing $base/receipt (expect 402)..." -ForegroundColor Cyan
 try {
   $resp = Invoke-WebRequest -Uri "$base/receipt" -Method GET -SkipHttpErrorCheck
 } catch {
-  Write-Error "Request failed. Is the server running? $($_.Exception.Message)"
-  exit 1
+  throw "Request failed. Is the server running? $($_.Exception.Message)"
 }
 
 Write-Host "Status: $($resp.StatusCode)"
 if ($resp.StatusCode -ne 402) {
-  Write-Error "Expected HTTP 402, received $($resp.StatusCode). Body: $($resp.Content)"
-  exit 1
+  throw "Expected HTTP 402, received $($resp.StatusCode). Body: $($resp.Content)"
 }
 
 $challenge = $resp.Headers["PAYMENT-REQUIRED"]
 if (-not $challenge) {
-  Write-Error "HTTP 402 did not include the PAYMENT-REQUIRED header."
-  exit 1
+  throw "HTTP 402 did not include the PAYMENT-REQUIRED header."
 }
 
 Write-Host "PASS — unpaid request returned 402 with PAYMENT-REQUIRED." -ForegroundColor Green
-exit 0
