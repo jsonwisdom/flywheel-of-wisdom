@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order confirmed · JSONWisdom Store</title>
+  <style>body{font-family:system-ui,sans-serif;max-width:720px;margin:60px auto;padding:24px;line-height:1.5}.box{border:1px solid #ddd;border-radius:16px;padding:24px}code{background:#eee;padding:.15rem .35rem;border-radius:5px}</style>
+</head>
+<body>
+  <main class="box">
+    <h1>Order confirmed</h1>
+    <p id="status">Waiting for a server-rendered order receipt.</p>
+    <p>This example deliberately does not invent an order, customer email, delivery country, or delivery date.</p>
+  </main>
+
+  <script src="/google-customer-reviews.js"></script>
+  <script>
+    // Production checkout must inject this object server-side before this script runs:
+    // window.ORDER_RECEIPT = {
+    //   order_id: "real-order-id",
+    //   email: "customer@example.com",
+    //   delivery_country: "US",
+    //   estimated_delivery_date: "YYYY-MM-DD",
+    //   products: [{ gtin: "REAL_GTIN_IF_AVAILABLE" }]
+    // };
+    if (window.ORDER_RECEIPT) {
+      try {
+        window.initGoogleCustomerReviews(window.ORDER_RECEIPT);
+        document.getElementById('status').textContent = 'Google Customer Reviews opt-in initialized for this fulfilled order.';
+      } catch (error) {
+        document.getElementById('status').textContent = `Review opt-in HOLD: ${error.message}`;
+      }
+    }
+  </script>
+</body>
+</html>

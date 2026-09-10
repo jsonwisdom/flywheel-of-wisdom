@@ -1,0 +1,13 @@
+{
+  "name": "jsonwisdom-store",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "verify:store": "node scripts/verify-store.mjs"
+  },
+  "dependencies": {
+    "openai": "latest"
+  }
+}

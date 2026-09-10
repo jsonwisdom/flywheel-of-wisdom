@@ -1,0 +1,35 @@
+name: Store CI
+
+on:
+  push:
+    paths:
+      - "store/**"
+      - ".github/workflows/store-ci.yml"
+  pull_request:
+    paths:
+      - "store/**"
+      - ".github/workflows/store-ci.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: store
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --ignore-scripts
+      - run: node --check server.mjs
+      - run: node --check public/google-customer-reviews.js
+      - run: node --check scripts/verify-store.mjs
+      - name: Verify canonical store structure and boundaries
+        run: npm run verify:store
+      - name: Confirm Merchant Center binding
+        run: grep -R "5624520187" README.md catalog public identity products
+      - name: Confirm operator identity binding
+        run: grep -R "jaywisdom.eth" README.md catalog public identity products
+      - name: Confirm payment and deployment boundaries
+        run: grep -R "NOT_LIVE_CHECKOUT\|MANUAL_SERVICE_ONLY\|production_deployment.*false\|deployment_verified.*false" catalog public identity products README.md
