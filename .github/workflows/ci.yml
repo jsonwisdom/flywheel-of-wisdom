@@ -53,3 +53,6 @@ jobs:
 
       - name: Run payment-gate tests
         run: npx tsx src/payment/payment-rail.test.ts
+
+      - name: Run bookPayment tests
+        run: npx tsx src/payment/book-payment.test.ts
