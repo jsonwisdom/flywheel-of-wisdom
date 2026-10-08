@@ -22,8 +22,11 @@ export interface PaymentEvidenceV1 {
   token_address: string;
   amount_base_units: string;
   pay_to: string;
+  payer: string | null;
+  request_id: string | null;
   receipt_status: 0 | 1 | null;
   block_number: string | null;
+  block_hash: string | null;
   confirmations: number | null;
   transfer_log_index: number | null;
   verified_on_chain: boolean;
@@ -40,6 +43,8 @@ export function replayHash(parts: {
   token: string;
   amount: string;
   pay_to: string;
+  payer?: string | null;
+  request_id?: string | null;
 }): string {
   const s = [
     parts.tx_hash.toLowerCase(),
@@ -48,6 +53,8 @@ export function replayHash(parts: {
     parts.token.toLowerCase(),
     parts.amount,
     parts.pay_to.toLowerCase(),
+    (parts.payer ?? "").toLowerCase(),
+    parts.request_id ?? "",
   ].join("|");
   return "0x" + createHash("sha256").update(s).digest("hex");
 }
@@ -62,8 +69,11 @@ export function emptyEvidence(object_id: string): PaymentEvidenceV1 {
     token_address: USDC_BASE,
     amount_base_units: AMOUNT_1_USDC,
     pay_to: PAY_TO_DEFAULT,
+    payer: null,
+    request_id: null,
     receipt_status: null,
     block_number: null,
+    block_hash: null,
     confirmations: null,
     transfer_log_index: null,
     verified_on_chain: false,

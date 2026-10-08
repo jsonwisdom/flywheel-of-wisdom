@@ -20,6 +20,7 @@ export type RpcReceiptLog = {
 export type RpcReceipt = {
   status: string | number;
   blockNumber: string | number;
+  blockHash?: string;
   logs: RpcReceiptLog[];
 } | null;
 
@@ -38,6 +39,15 @@ export type PaymentVerificationResult =
       evidence: PaymentEvidenceV1;
     };
 
+export type VerifyOpts = {
+  payTo?: string;
+  token?: string;
+  amount?: string;
+  minConfirmations?: number;
+  expectedPayer?: string | null;
+  requestId?: string | null;
+};
+
 function topicAddr(topic: string): string {
   return ("0x" + topic.slice(-40)).toLowerCase();
 }
@@ -51,21 +61,26 @@ function findUsdcTransferToPayTo(
   logs: RpcReceiptLog[],
   payTo: string,
   amount: bigint,
-  token: string
-): { logIndex: number } | null {
+  token: string,
+  expectedPayer: string | null
+): { logIndex: number; from: string } | { mismatch: "TRANSFER" | "PAYER" } | null {
+  let sawTransfer = false;
   for (let i = 0; i < logs.length; i++) {
     const log = logs[i];
     if (log.address.toLowerCase() !== token.toLowerCase()) continue;
     if (!log.topics[0] || log.topics[0].toLowerCase() !== ERC20_TRANSFER_TOPIC0) continue;
     if (log.topics.length < 3) continue;
+    const from = topicAddr(log.topics[1] ?? "");
     const to = topicAddr(log.topics[2]);
     const amt = hexToBigInt(log.data);
-    if (to === payTo.toLowerCase() && amt === amount) {
-      const li = log.logIndex !== undefined ? Number(log.logIndex) : i;
-      return { logIndex: li };
-    }
+    if (to !== payTo.toLowerCase() || amt !== amount) continue;
+    sawTransfer = true;
+    if (expectedPayer && from !== expectedPayer.toLowerCase()) continue;
+    const li = log.logIndex !== undefined ? Number(log.logIndex) : i;
+    return { logIndex: li, from };
   }
-  return null;
+  if (sawTransfer && expectedPayer) return { mismatch: "PAYER" };
+  return sawTransfer ? null : null;
 }
 
 function pending(
@@ -87,12 +102,14 @@ export async function verifySettlementTx(
   middlewareHash: string | null,
   objectId: string,
   rpc: RpcClient,
-  opts?: { payTo?: string; token?: string; amount?: string; minConfirmations?: number }
+  opts?: VerifyOpts
 ): Promise<PaymentVerificationResult> {
   const payTo = opts?.payTo ?? PAY_TO_DEFAULT;
   const token = opts?.token ?? USDC_BASE;
   const amountStr = opts?.amount ?? AMOUNT_1_USDC;
   const minConf = opts?.minConfirmations ?? 1;
+  const expectedPayer = opts?.expectedPayer ?? null;
+  const requestId = opts?.requestId ?? null;
 
   if (!middlewareHash) {
     return { state: "UNPAID_KNOWLEDGE_402", reason: "NO_HASH", evidence: emptyEvidence(objectId) };
@@ -100,48 +117,59 @@ export async function verifySettlementTx(
   if (!isTxHash(middlewareHash)) {
     return pending(objectId, "BAD_HASH", { tx_hash: middlewareHash });
   }
+  if (!expectedPayer) {
+    return pending(objectId, "PAYER_UNBOUND", { tx_hash: middlewareHash });
+  }
+  if (!requestId) {
+    return pending(objectId, "REQUEST_UNBOUND", { tx_hash: middlewareHash, payer: expectedPayer.toLowerCase() });
+  }
 
   let chainId: number;
   try {
     chainId = await rpc.chainId();
   } catch {
-    return pending(objectId, "RPC_ERROR", { tx_hash: middlewareHash });
+    return pending(objectId, "RPC_ERROR", { tx_hash: middlewareHash, request_id: requestId });
   }
   if (chainId !== CHAIN_ID_BASE) {
-    return pending(objectId, "WRONG_CHAIN", { tx_hash: middlewareHash, chain_id: chainId });
+    return pending(objectId, "WRONG_CHAIN", { tx_hash: middlewareHash, chain_id: chainId, request_id: requestId });
   }
 
   let receipt: RpcReceipt;
   try {
     receipt = await rpc.getReceipt(middlewareHash);
   } catch {
-    return pending(objectId, "RPC_ERROR", { tx_hash: middlewareHash });
+    return pending(objectId, "RPC_ERROR", { tx_hash: middlewareHash, request_id: requestId });
   }
-  if (!receipt) return pending(objectId, "NOT_FOUND", { tx_hash: middlewareHash });
+  if (!receipt) return pending(objectId, "NOT_FOUND", { tx_hash: middlewareHash, request_id: requestId });
 
   if (Number(receipt.status) !== 1) {
-    return pending(objectId, "REVERTED", { tx_hash: middlewareHash, receipt_status: 0 });
+    return pending(objectId, "REVERTED", { tx_hash: middlewareHash, receipt_status: 0, request_id: requestId });
   }
   if (token.toLowerCase() !== USDC_BASE.toLowerCase()) {
-    return pending(objectId, "WRONG_TOKEN", { tx_hash: middlewareHash, token_address: token });
+    return pending(objectId, "WRONG_TOKEN", { tx_hash: middlewareHash, token_address: token, request_id: requestId });
   }
 
-  const hit = findUsdcTransferToPayTo(receipt.logs ?? [], payTo, BigInt(amountStr), token);
-  if (!hit) return pending(objectId, "TRANSFER_MISMATCH", { tx_hash: middlewareHash });
+  const hit = findUsdcTransferToPayTo(receipt.logs ?? [], payTo, BigInt(amountStr), token, expectedPayer);
+  if (!hit) return pending(objectId, "TRANSFER_MISMATCH", { tx_hash: middlewareHash, request_id: requestId });
+  if ("mismatch" in hit) {
+    return pending(objectId, "WRONG_PAYER", { tx_hash: middlewareHash, request_id: requestId });
+  }
 
   const blockNum = Number(receipt.blockNumber);
   let head = blockNum;
   try {
     head = await rpc.blockNumber();
   } catch {
-    return pending(objectId, "RPC_ERROR", { tx_hash: middlewareHash });
+    return pending(objectId, "RPC_ERROR", { tx_hash: middlewareHash, request_id: requestId });
   }
   const confirmations = head - blockNum + 1;
   if (confirmations < minConf) {
     return pending(objectId, "UNCONFIRMED", {
       tx_hash: middlewareHash,
       block_number: String(blockNum),
+      block_hash: receipt.blockHash ?? null,
       confirmations,
+      request_id: requestId,
     });
   }
 
@@ -152,6 +180,8 @@ export async function verifySettlementTx(
     token,
     amount: amountStr,
     pay_to: payTo,
+    payer: expectedPayer,
+    request_id: requestId,
   });
 
   const evidence: PaymentEvidenceV1 = {
@@ -163,8 +193,11 @@ export async function verifySettlementTx(
     token_address: token.toLowerCase(),
     amount_base_units: amountStr,
     pay_to: payTo.toLowerCase(),
+    payer: hit.from,
+    request_id: requestId,
     receipt_status: 1,
     block_number: String(blockNum),
+    block_hash: receipt.blockHash ?? null,
     confirmations,
     transfer_log_index: hit.logIndex,
     verified_on_chain: true,
