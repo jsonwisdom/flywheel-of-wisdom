@@ -11,8 +11,8 @@ import "dotenv/config";
 import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
 import { paymentMiddlewareFromHTTPServer } from "@x402/express";
-import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge";
-import { attachIndependentVerification, notRun } from "./src/payment/attach-verification";
+import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge.js";
+import { attachIndependentVerification, notRun } from "./src/payment/attach-verification.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -35,13 +35,11 @@ const server = await createX402Server({
       price: "$1.00",
       networks: ["eip155:8453"],
       description: "One Wisdom Receipt — $1 USDC on Base",
-      mimeType: "application/json",
     },
     "GET /knowledge": {
       price: "$1.00",
       networks: ["eip155:8453"],
       description: "One KnowledgeObject bundle — $1 USDC on Base",
-      mimeType: "application/json",
     },
   },
 });
@@ -65,7 +63,7 @@ function requestId(req: express.Request): string {
 
 async function independent(req: express.Request, res: express.Response, objectId: string) {
   const txHash = settlementHash(res);
-  const payer = req.header("x-payer");
+  const payer = req.header("x-payer") ?? null;
   if (!txHash) return notRun("NO_HASH");
   return attachIndependentVerification({
     txHash,
