@@ -17,6 +17,7 @@ import { readInbound } from "./src/stream/inbound-reader.js";
 import { createBufferRecord, markBuffering, markPiped, markRejected } from "./src/stream/buffer-state.js";
 import { createSettleRecord, markHeaderObserved, markNotVerified } from "./src/stream/settle-state.js";
 import { parseSettlementHeader } from "./src/stream/header-auth.js";
+import { claimPayment } from "./src/payment/replay-ledger.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -82,6 +83,17 @@ const middlewareRoutes = {
 
 // Public resourceServer avoids the NodeNext private-member type collision
 // between X402Server and x402HTTPResourceServer.
+app.use((req, res, next) => {
+  if (req.path !== "/receipt" && req.path !== "/knowledge") return next();
+  const header = req.header("payment-signature");
+  if (!header) return next();
+  const claim = claimPayment(header);
+  if (!claim.accepted) {
+    res.status(409).json({ ok: false, error: "replay", settlement_tx: null });
+    return;
+  }
+  next();
+});
 app.use(paymentMiddleware(middlewareRoutes, server.resourceServer));
 
 function parsePaidType(raw: unknown): PaidObjectType {
