@@ -74,11 +74,12 @@ const middlewareRoutes = {
 app.use(paymentMiddleware(middlewareRoutes, server.resourceServer));
 
 // Second-line commit gate for paid routes.
-// HandlerComplete is not SettlementVerified. This gate only holds bytes until
-// the handler ends or fails. The x402 middleware remains the settlement release
-// boundary: it buffers until settle succeeds, and discards on settle failure.
-// This gate adds: discard-on-error, a hard size limit, and fail-closed overflow.
+// HandlerComplete is not SettlementVerified. The x402 middleware remains the
+// settlement release boundary. This gate holds bytes until end or error.
+// Backpressure: write returns false above the high-water mark; drain fires on commit.
+// Overflow: 413, buffer discarded, no protected body.
 const PAID_BUFFER_MAX_BYTES = 1_048_576;
+const PAID_HIGH_WATER_MARK = 16 * 1024;
 
 function toBuffer(chunk: unknown, encoding?: BufferEncoding): Buffer {
   if (chunk == null) return Buffer.alloc(0);
@@ -91,11 +92,17 @@ function toBuffer(chunk: unknown, encoding?: BufferEncoding): Buffer {
 app.use((req, res, next) => {
   if (req.path !== "/receipt" && req.path !== "/knowledge") return next();
   const chunks: Buffer[] = [];
+  const pendingCbs: Array<() => void> = [];
   let bufferedBytes = 0;
-  const origWrite = res.write.bind(res);
   const origEnd = res.end.bind(res);
   let committed = false;
   let failed = false;
+  let belowMark = true;
+
+  const flushCbs = () => {
+    const cbs = pendingCbs.splice(0);
+    for (const cb of cbs) cb();
+  };
 
   const failClosed = (reason: string) => {
     failed = true;
@@ -106,36 +113,56 @@ app.use((req, res, next) => {
 
   (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer = () => {
     failClosed("discarded");
+    flushCbs();
   };
 
   res.write = ((chunk: unknown, encoding?: BufferEncoding, cb?: () => void) => {
-    if (committed) return origWrite(chunk as never, encoding as never, cb as never);
-    if (!failed && chunk != null) {
+    if (committed || failed) {
+      if (typeof cb === "function") cb();
+      return false;
+    }
+    if (chunk != null) {
       const buf = toBuffer(chunk, encoding);
       if (bufferedBytes + buf.length > PAID_BUFFER_MAX_BYTES) {
         failClosed("overflow");
-      } else {
-        chunks.push(buf);
-        bufferedBytes += buf.length;
+        if (!res.headersSent) res.status(413);
+        if (typeof cb === "function") cb();
+        return false;
       }
+      chunks.push(buf);
+      bufferedBytes += buf.length;
     }
-    if (typeof cb === "function") cb();
-    return true;
+    if (typeof cb === "function") pendingCbs.push(cb);
+    const ok = bufferedBytes <= PAID_HIGH_WATER_MARK;
+    if (!ok) belowMark = false;
+    return ok;
   }) as typeof res.write;
 
   res.end = ((chunk?: unknown, encoding?: BufferEncoding, cb?: () => void) => {
     if (committed) return origEnd(chunk as never, encoding as never, cb as never);
     committed = true;
-    if (failed) return origEnd(undefined as never, encoding as never, cb as never);
+    if (failed) {
+      flushCbs();
+      if (!res.headersSent) res.status(413);
+      return origEnd(undefined as never, encoding as never, cb as never);
+    }
     if (chunk != null) {
       const buf = toBuffer(chunk, encoding);
       if (bufferedBytes + buf.length > PAID_BUFFER_MAX_BYTES) {
         failClosed("overflow");
+        flushCbs();
+        if (!res.headersSent) res.status(413);
         return origEnd(undefined as never, encoding as never, cb as never);
       }
       chunks.push(buf);
     }
-    return origEnd(Buffer.concat(chunks), encoding as never, cb as never);
+    const body = Buffer.concat(chunks);
+    chunks.length = 0;
+    bufferedBytes = 0;
+    const result = origEnd(body, encoding as never, cb as never);
+    flushCbs();
+    if (!belowMark) res.emit("drain");
+    return result;
   }) as typeof res.end;
 
   next();
