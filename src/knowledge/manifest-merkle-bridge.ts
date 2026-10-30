@@ -1,5 +1,5 @@
-import type { ManifestEntry } from "./knowledge-object";
-import { hashLeaf as taggedLeaf, prove, verify, type Hex, type MerkleProof, type VerifyResult } from "./merkle-proof";
+import type { ManifestEntry } from "./knowledge-object.js";
+import { hashLeaf as taggedLeaf, prove, verify, type Hex, type MerkleProof, type VerifyResult } from "./merkle-proof.js";
 
 export function entryPreimage(e: ManifestEntry): string {
   return `${e.path}\t${e.type}\t${e.object_id}\t${e.version_id}\t${e.content_hash}`;

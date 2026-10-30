@@ -1,4 +1,4 @@
-import { field, runNullEngine, type EngineOutput } from "../knowledge/null-engine";
+import { field, runNullEngine, type EngineOutput } from "../knowledge/null-engine.js";
 
 export interface CandidateFields {
   [name: string]: { state?: string; value?: unknown; reason?: string };

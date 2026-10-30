@@ -8,7 +8,7 @@ import {
   isTxHash,
   replayHash,
   type PaymentEvidenceV1,
-} from "./payment-evidence";
+} from "./payment-evidence.js";
 
 export type RpcReceiptLog = {
   address: string;

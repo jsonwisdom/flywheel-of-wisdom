@@ -1,4 +1,4 @@
-import type { PaymentEvidenceV1 } from "./payment-evidence";
+import type { PaymentEvidenceV1 } from "./payment-evidence.js";
 
 export interface Booking {
   tx_hash: string;

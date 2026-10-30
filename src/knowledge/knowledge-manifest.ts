@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import type { Hex, ManifestEntry, ObjectType, KnowledgeManifest } from "./knowledge-object";
-import { field } from "./null-engine";
+import type { Hex, ManifestEntry, ObjectType, KnowledgeManifest } from "./knowledge-object.js";
+import { field } from "./null-engine.js";
 
 export function sha256Hex(bytes: Uint8Array | Buffer | string): Hex {
   const h = createHash("sha256");

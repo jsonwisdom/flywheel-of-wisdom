@@ -4,7 +4,7 @@
  * MISSING ≠ UNKNOWN ≠ NOT_LOADED ≠ NULL ≠ FALSE
  */
 
-import type { FieldEvidence, FieldState, TypedField } from "./knowledge-object";
+import type { FieldEvidence, FieldState, TypedField } from "./knowledge-object.js";
 
 export type EngineStatus = "COMPLETE" | "PARTIAL" | "BLOCKED" | "CONFLICTED";
 

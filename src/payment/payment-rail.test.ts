@@ -1,6 +1,6 @@
-import { emptyEvidence, USDC_BASE, PAY_TO_DEFAULT, ERC20_TRANSFER_TOPIC0 } from "./payment-evidence";
-import { verifySettlementTx, type RpcClient, type RpcReceipt } from "./base-rpc-verifier";
-import { emptyLedger, reconcilePayment } from "./payment-reconciliation";
+import { emptyEvidence, USDC_BASE, PAY_TO_DEFAULT, ERC20_TRANSFER_TOPIC0 } from "./payment-evidence.js";
+import { verifySettlementTx, type RpcClient, type RpcReceipt } from "./base-rpc-verifier.js";
+import { emptyLedger, reconcilePayment } from "./payment-reconciliation.js";
 
 const HASH = "0x" + "11".repeat(32);
 const OTHER = "0x" + "22".repeat(32);
