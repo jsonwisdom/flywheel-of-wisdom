@@ -35,7 +35,7 @@ const routes = {
     description: "One KnowledgeObject bundle — $1 USDC on Base",
     mimeType: "application/json",
   },
-} as const;
+};
 
 const server = await createX402Server({
   environment: "production",
