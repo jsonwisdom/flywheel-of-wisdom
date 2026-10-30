@@ -13,6 +13,7 @@ import { paymentMiddleware } from "@x402/express";
 import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge.js";
 import { boundedReadable } from "./src/stream/bounded-readable.js";
 import { readInbound } from "./src/stream/inbound-reader.js";
+import { createBufferRecord, markBuffering, markPiped, markRejected } from "./src/stream/buffer-state.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -118,8 +119,11 @@ function sendPaid(
 }
 
 function pipePaid(res: express.Response, chunks: Buffer[]): void {
+  const record = createBufferRecord();
+  (res.locals as { bufferWrite?: typeof record }).bufferWrite = record;
   const total = chunks.reduce((n, c) => n + c.length, 0);
   if (total > PAID_BODY_MAX_BYTES) {
+    markRejected(record, "payload_too_large");
     res.status(413).json({
       ok: false,
       error: "payload_too_large",
@@ -127,11 +131,11 @@ function pipePaid(res: express.Response, chunks: Buffer[]): void {
     });
     return;
   }
-  // Settlement wire: this pipe writes into the x402 middleware buffer.
-  // The middleware does not release those bytes until settle succeeds.
-  // Settle failure discards the buffer. pipe is not a settlement proof.
-  // Backpressure: pipe pauses when the destination write returns false.
+  markBuffering(record, total);
+  // Settlement wire: piped bytes enter the x402 middleware buffer.
+  // Release is settle success. Settle failure discards. pipe is not proof.
   boundedReadable(chunks).pipe(res);
+  markPiped(record);
 }
 
 
