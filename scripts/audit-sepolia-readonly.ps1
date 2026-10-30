@@ -25,7 +25,7 @@ try {
     if ($guardPos -ge 0 -and $cdpPos -gt $guardPos) {
       Add-Check 'guard_before_cdp' 'PASS' 'EXECUTE_TEST_PAYMENT appears before new CdpClient (textual ordering only)'
     } else { Add-Check 'guard_before_cdp' 'HOLD' 'Guard absent or not before first CDP client construction' }
-    if ($c -match '1000000n' -and $c -match 'amount\s*!==\s*MAX_ATOMIC') {
+    if ($c -match '\b1_?0_?0_?0_?0_?0_?0n\b' -and $c -match 'amount\s*!==\s*MAX_ATOMIC') {
       Add-Check 'exact_amount_static' 'PASS' 'Exact 1000000n comparison found (static check only)'
     } else { Add-Check 'exact_amount_static' 'HOLD' 'Exact amount pattern not independently established' }
   } else { Add-Check 'local_client' 'HOLD' 'client-sepolia.ts not found' }
