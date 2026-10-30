@@ -16,7 +16,7 @@ import { boundedReadable } from "./src/stream/bounded-readable.js";
 import { readInbound } from "./src/stream/inbound-reader.js";
 import { createBufferRecord, markBuffering, markPiped, markRejected } from "./src/stream/buffer-state.js";
 import { createSettleRecord, markHeaderObserved, markNotVerified } from "./src/stream/settle-state.js";
-import { proveHeader } from "./src/stream/header-auth.js";
+import { parseSettlementHeader } from "./src/stream/header-auth.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -28,7 +28,8 @@ if (!PAY_TO.startsWith("0x") || PAY_TO.length !== 42) {
 const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
-  (res.locals as { requestId?: string }).requestId = req.header("x-request-id") ?? crypto.randomUUID();
+  (res.locals as { serverRequestId?: string; clientRequestId?: string | null }).serverRequestId = crypto.randomUUID();
+  (res.locals as { clientRequestId?: string | null }).clientRequestId = req.header("x-request-id") ?? null;
   next();
 });
 
@@ -148,13 +149,13 @@ function pipePaid(req: express.Request, res: express.Response, chunks: Buffer[])
   res.setHeader = ((name: string, value: number | string | readonly string[]) => {
     if (String(name).toLowerCase() === "payment-response") {
       markHeaderObserved(settle, value, {
-        requestId: String((res.locals as { requestId?: string }).requestId ?? ""),
+        requestId: String((res.locals as { serverRequestId?: string }).serverRequestId ?? ""),
         resource: req.path,
         payTo: PAY_TO,
         price: "$1.00",
         network: "eip155:8453",
       });
-      settle.auth = proveHeader(value, "eip155:8453");
+      settle.auth = parseSettlementHeader(value, "eip155:8453");
     }
     return origSetHeader(name, value);
   }) as typeof res.setHeader;

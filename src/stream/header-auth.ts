@@ -13,7 +13,7 @@ function decode(header: string): unknown {
   return JSON.parse(Buffer.from(pad, "base64").toString("utf8"));
 }
 
-export function proveHeader(header: unknown, expectedNetwork: string): HeaderAuthProof {
+export function parseSettlementHeader(header: unknown, expectedNetwork: string): HeaderAuthProof {
   if (typeof header !== "string") {
     return {
       decoded: false,
@@ -27,13 +27,14 @@ export function proveHeader(header: unknown, expectedNetwork: string): HeaderAut
   }
   try {
     const parsed = decode(header) as { success?: boolean; transaction?: string; network?: string };
-    const structureValid = typeof parsed.success === "boolean" && typeof parsed.network === "string";
+    const hashValid = typeof parsed.transaction === "string" && /^0x[0-9a-fA-F]{64}$/.test(parsed.transaction);
     const networkMatch = parsed.network === expectedNetwork;
+    const structureValid = parsed.success === true && networkMatch && hashValid;
     return {
       decoded: true,
-      structureValid: structureValid && networkMatch,
+      structureValid,
       authenticated: false,
-      reason: "Decoded structure only. No independent facilitator or chain verification. Header is not authenticated.",
+      reason: "Parser only. Requires success, Base network, and a 32-byte hash. This is not authentication.",
       transaction: typeof parsed.transaction === "string" ? parsed.transaction : null,
       network: typeof parsed.network === "string" ? parsed.network : null,
       success: typeof parsed.success === "boolean" ? parsed.success : null,
