@@ -3,6 +3,7 @@ export type BufferSettleState = "PENDING" | "NOT_VERIFIED" | "HEADER_OBSERVED" |
 export interface BufferSettleRecord {
   state: BufferSettleState;
   note: string;
+  header?: string;
 }
 
 export function createSettleRecord(): BufferSettleRecord {
@@ -22,7 +23,8 @@ export function markFailed(record: BufferSettleRecord, reason: string): void {
   record.note = reason;
 }
 
-export function markHeaderObserved(record: BufferSettleRecord): void {
+export function markHeaderObserved(record: BufferSettleRecord, header?: string): void {
   record.state = "HEADER_OBSERVED";
-  record.note = "PAYMENT-RESPONSE header was set. Header presence is not independent verification. settlement_tx in the body stays null.";
+  record.header = header;
+  record.note = "PAYMENT-RESPONSE header was set. Header presence is not independent verification. The body is sealed before this header exists, so the hash is not copied. settlement_tx stays null.";
 }

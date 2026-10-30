@@ -140,7 +140,9 @@ function pipePaid(res: express.Response, chunks: Buffer[]): void {
   // Release is settle success. Settle failure discards. pipe is not proof.
   const origSetHeader = res.setHeader.bind(res);
   res.setHeader = ((name: string, value: number | string | readonly string[]) => {
-    if (String(name).toLowerCase() === "payment-response") markHeaderObserved(settle);
+    if (String(name).toLowerCase() === "payment-response") {
+      markHeaderObserved(settle, typeof value === "string" ? value : String(value));
+    }
     return origSetHeader(name, value);
   }) as typeof res.setHeader;
   const stream = boundedReadable(chunks);
@@ -158,6 +160,7 @@ function bodySettle() {
     settlement_status: "pending-verification",
     settlement_source: "payment-response-header",
     settlement_verified: false,
+    settlement_body_sealed_before_header: true,
   };
 }
 
