@@ -163,13 +163,18 @@ app.get("/knowledge", (req, res) => {
     type: parsePaidType(req.query.type),
     settlement_tx: null,
   });
-  res.json({
+  const payload = Buffer.from(JSON.stringify({
     ok: true,
     ...result,
     pointer: POINTER,
     settlement_status: "pending-verification",
     note: pendingSettlementNote() + " " + (result.note ?? ""),
-  });
+  }));
+  res.status(200);
+  res.setHeader("content-type", "application/json; charset=utf-8");
+  const chunks: Buffer[] = [];
+  for (let i = 0; i < payload.length; i += 1024) chunks.push(payload.subarray(i, i + 1024));
+  pipePaid(res, chunks);
 });
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
