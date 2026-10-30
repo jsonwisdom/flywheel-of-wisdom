@@ -46,11 +46,11 @@ export function makeManifest(args: {
     content_hash: field("PRESENT", content_hash, "root_of_sorted_entries"),
     entries: [...args.entries].sort((a, b) => (a.path < b.path ? -1 : 1)),
     parent_version_id: args.parent_version_id
-      ? field("PRESENT", args.parent_version_id, "parent")
-      : field("NOT_APPLICABLE", null, "root_release"),
+      ? field<string>("PRESENT", args.parent_version_id, "parent")
+      : field<string>("NOT_APPLICABLE", null, "root_release"),
     supersedes: args.supersedes
-      ? field("PRESENT", args.supersedes, "supersedes")
-      : field("NOT_APPLICABLE", null, "no_predecessor"),
+      ? field<string>("PRESENT", args.supersedes, "supersedes")
+      : field<string>("NOT_APPLICABLE", null, "no_predecessor"),
   };
 }
 

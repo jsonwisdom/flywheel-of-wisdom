@@ -1,5 +1,5 @@
 import { field, runNullEngine, type EngineOutput } from "./null-engine.js";
-import type { KnowledgeObject, ObjectType, PaymentClass } from "./knowledge-object.js";
+import type { Hex, KnowledgeObject, ObjectType, PaymentClass } from "./knowledge-object.js";
 import { sha256Hex } from "./knowledge-manifest.js";
 
 export interface IngestInput {
@@ -16,32 +16,34 @@ export interface IngestInput {
 
 export function ingest(input: IngestInput): { object: KnowledgeObject; engine: EngineOutput } {
   const hasBytes = input.bytes !== undefined;
-  const buf = hasBytes
-    ? typeof input.bytes === "string"
-      ? Buffer.from(input.bytes, "utf8")
-      : Buffer.from(input.bytes)
-    : null;
+  const raw = input.bytes;
+  const buf =
+    raw == null
+      ? null
+      : typeof raw === "string"
+        ? Buffer.from(raw, "utf8")
+        : Buffer.from(raw);
 
   const object: KnowledgeObject = {
     id: input.id,
     type: input.type,
     version: input.version,
     content_hash: hasBytes && buf
-      ? field("PRESENT", sha256Hex(buf), "sha256_of_bytes")
-      : field("NOT_LOADED", null, "bytes_not_supplied"),
+      ? field<Hex>("PRESENT", sha256Hex(buf), "sha256_of_bytes")
+      : field<Hex>("NOT_LOADED", null, "bytes_not_supplied"),
     media_type: input.media_type
-      ? field("PRESENT", input.media_type, "caller")
-      : field("UNKNOWN", null, "media_type_not_supplied"),
-    size: buf ? field("PRESENT", buf.byteLength, "byteLength") : field("NOT_LOADED", null, "no_bytes"),
+      ? field<string>("PRESENT", input.media_type, "caller")
+      : field<string>("UNKNOWN", null, "media_type_not_supplied"),
+    size: buf ? field<number>("PRESENT", buf.byteLength, "byteLength") : field<number>("NOT_LOADED", null, "no_bytes"),
     parent_id: input.parent_id
-      ? field("PRESENT", input.parent_id, "caller")
-      : field("NOT_APPLICABLE", null, "no_parent"),
+      ? field<string>("PRESENT", input.parent_id, "caller")
+      : field<string>("NOT_APPLICABLE", null, "no_parent"),
     source_uri: input.source_uri
-      ? field("PRESENT", input.source_uri, "caller")
-      : field("NOT_LOADED", null, "source_uri_not_fetched"),
+      ? field<string>("PRESENT", input.source_uri, "caller")
+      : field<string>("NOT_LOADED", null, "source_uri_not_fetched"),
     provenance: input.provenance
-      ? field("UNVERIFIED", null, input.provenance)
-      : field("UNKNOWN", null, "no_provenance_receipt"),
+      ? field<string>("UNVERIFIED", null, input.provenance)
+      : field<string>("UNKNOWN", null, "no_provenance_receipt"),
     payment_class: field("PRESENT", input.payment_class ?? "x402", "default_or_caller"),
     state: field("PRESENT", "INGESTED", "ingest_v0"),
   };

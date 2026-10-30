@@ -6,7 +6,7 @@ const HASH = "0x" + "11".repeat(32);
 const OTHER = "0x" + "22".repeat(32);
 const PAD = "0x" + "00".repeat(12);
 
-function transferLog(to: string, amountHex: string, token = USDC_BASE) {
+function transferLog(to: string, amountHex: string, token: string = USDC_BASE) {
   return {
     address: token,
     topics: [ERC20_TRANSFER_TOPIC0, PAD + "aa".repeat(20), PAD + to.slice(2)],
