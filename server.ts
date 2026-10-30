@@ -151,6 +151,16 @@ function pipePaid(res: express.Response, chunks: Buffer[]): void {
 
 
 
+
+function bodySettle() {
+  return {
+    settlement_tx: null,
+    settlement_status: "pending-verification",
+    settlement_source: "payment-response-header",
+    settlement_verified: false,
+  };
+}
+
 function pipeJson(res: express.Response, body: Record<string, unknown>): void {
   const payload = Buffer.from(JSON.stringify(body));
   res.status(200);
@@ -168,8 +178,7 @@ app.get("/receipt", (_req, res) => {
     network: "base-mainnet",
     pay_to: PAY_TO,
     pointer: POINTER,
-    settlement_tx: null,
-    settlement_status: "pending-verification",
+    ...bodySettle(),
     note:
       pendingSettlementNote() +
       " Payment destination is the configured address. ENS pointer is an observed label only. " +
