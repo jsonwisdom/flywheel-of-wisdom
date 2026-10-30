@@ -9,7 +9,7 @@
 import "dotenv/config";
 import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
-import { paymentMiddleware, type RoutesConfig } from "@x402/express";
+import { paymentMiddleware } from "@x402/express";
 import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
@@ -46,7 +46,7 @@ const server = await createX402Server({
   routes: cdpRoutes,
 });
 
-const middlewareRoutes: RoutesConfig = {
+const middlewareRoutes = {
   "GET /receipt": {
     accepts: {
       scheme: "exact",
@@ -69,8 +69,8 @@ const middlewareRoutes: RoutesConfig = {
   },
 };
 
-// Public resourceServer + explicit RoutesConfig avoids the NodeNext
-// private-member type collision between X402Server and x402HTTPResourceServer.
+// Public resourceServer avoids the NodeNext private-member type collision
+// between X402Server and x402HTTPResourceServer.
 app.use(paymentMiddleware(middlewareRoutes, server.resourceServer));
 
 function parsePaidType(raw: unknown): PaidObjectType {
