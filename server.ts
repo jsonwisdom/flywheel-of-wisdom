@@ -14,7 +14,7 @@ import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-k
 import { boundedReadable } from "./src/stream/bounded-readable.js";
 import { readInbound } from "./src/stream/inbound-reader.js";
 import { createBufferRecord, markBuffering, markPiped, markRejected } from "./src/stream/buffer-state.js";
-import { createSettleRecord, markNotVerified } from "./src/stream/settle-state.js";
+import { createSettleRecord, markHeaderObserved, markNotVerified } from "./src/stream/settle-state.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -138,6 +138,11 @@ function pipePaid(res: express.Response, chunks: Buffer[]): void {
   markNotVerified(settle);
   // Settlement wire: piped bytes enter the x402 middleware buffer.
   // Release is settle success. Settle failure discards. pipe is not proof.
+  const origSetHeader = res.setHeader.bind(res);
+  res.setHeader = ((name: string, value: number | string | readonly string[]) => {
+    if (String(name).toLowerCase() === "payment-response") markHeaderObserved(settle);
+    return origSetHeader(name, value);
+  }) as typeof res.setHeader;
   const stream = boundedReadable(chunks);
   stream.settleState = settle;
   stream.pipe(res);

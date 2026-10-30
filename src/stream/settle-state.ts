@@ -1,4 +1,4 @@
-export type BufferSettleState = "PENDING" | "NOT_VERIFIED" | "FAILED";
+export type BufferSettleState = "PENDING" | "NOT_VERIFIED" | "HEADER_OBSERVED" | "FAILED";
 
 export interface BufferSettleRecord {
   state: BufferSettleState;
@@ -20,4 +20,9 @@ export function markNotVerified(record: BufferSettleRecord): void {
 export function markFailed(record: BufferSettleRecord, reason: string): void {
   record.state = "FAILED";
   record.note = reason;
+}
+
+export function markHeaderObserved(record: BufferSettleRecord): void {
+  record.state = "HEADER_OBSERVED";
+  record.note = "PAYMENT-RESPONSE header was set. Header presence is not independent verification. settlement_tx in the body stays null.";
 }
