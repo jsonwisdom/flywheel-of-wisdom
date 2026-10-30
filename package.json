@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Real x402 payment rail for Wisdom Receipts on Base mainnet. Settles to jaywisdom.base.eth.",
+  "description": "Real x402 payment rail for Wisdom Receipts on Base mainnet. Settles to configured address. ENS pointer is observed label only.",
   "scripts": {
     "start": "tsx server.ts",
     "dev": "tsx watch server.ts",
@@ -13,10 +13,10 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@coinbase/cdp-sdk": "^1.0.0",
-    "@x402/core": "^0.5.0",
-    "@x402/evm": "^0.5.0",
-    "@x402/express": "^0.5.0",
+    "@coinbase/cdp-sdk": "^1.60.0",
+    "@x402/core": "2.29.0",
+    "@x402/evm": "2.29.0",
+    "@x402/express": "2.29.0",
     "express": "^4.21.0"
   },
   "devDependencies": {
