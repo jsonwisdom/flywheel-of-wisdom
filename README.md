@@ -62,3 +62,9 @@ them real settlement hashes instead of `MOCK-` references.
 Settlement transaction hash in the response body is intentionally null.
 Verified settlement is available only in the PAYMENT-RESPONSE header after
 successful settlement. Body claims are not independently verified.
+
+## Paid response API
+
+Paid routes use a complete-response API (`sendPaid`). They do not override `res.write`. A commit-buffer cannot provide real Node `drain` before `end()`, so streaming writes are not the supported contract.
+
+Bodies over 1 MiB return 413. Handler errors return 500 with `internal_error` and `settlement_tx: null`. Handler completion is not settlement verification. The x402 middleware remains the settlement release boundary.
