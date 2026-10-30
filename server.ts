@@ -131,7 +131,10 @@ app.get("/knowledge", (req, res) => {
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const message = err instanceof Error ? err.message : "unknown";
   console.error("paid-route error", message);
-  if (res.headersSent) return;
+  if (res.headersSent) {
+    res.end();
+    return;
+  }
   res.status(500).json({
     ok: false,
     error: "internal_error",
