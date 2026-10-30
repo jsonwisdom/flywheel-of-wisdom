@@ -7,6 +7,7 @@
  * pointer ≠ identity ≠ control ≠ authority. AUTHORITY_CREATED=false.
  */
 import "dotenv/config";
+import crypto from "node:crypto";
 import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
 import { paymentMiddleware } from "@x402/express";
@@ -25,6 +26,10 @@ if (!PAY_TO.startsWith("0x") || PAY_TO.length !== 42) {
 
 const app = express();
 app.use(express.json());
+app.use((req, res, next) => {
+  (res.locals as { requestId?: string }).requestId = req.header("x-request-id") ?? crypto.randomUUID();
+  next();
+});
 
 const cdpRoutes = {
   "GET /receipt": {
@@ -119,7 +124,7 @@ function sendPaid(
   res.status(status).json(body);
 }
 
-function pipePaid(res: express.Response, chunks: Buffer[]): void {
+function pipePaid(req: express.Request, res: express.Response, chunks: Buffer[]): void {
   const record = createBufferRecord();
   (res.locals as { bufferWrite?: typeof record }).bufferWrite = record;
   const total = chunks.reduce((n, c) => n + c.length, 0);
@@ -141,7 +146,13 @@ function pipePaid(res: express.Response, chunks: Buffer[]): void {
   const origSetHeader = res.setHeader.bind(res);
   res.setHeader = ((name: string, value: number | string | readonly string[]) => {
     if (String(name).toLowerCase() === "payment-response") {
-      markHeaderObserved(settle, typeof value === "string" ? value : String(value));
+      markHeaderObserved(settle, value, {
+        requestId: String((res.locals as { requestId?: string }).requestId ?? ""),
+        resource: req.path,
+        payTo: PAY_TO,
+        price: "$1.00",
+        network: "eip155:8453",
+      });
     }
     return origSetHeader(name, value);
   }) as typeof res.setHeader;
@@ -164,17 +175,17 @@ function bodySettle() {
   };
 }
 
-function pipeJson(res: express.Response, body: Record<string, unknown>): void {
+function pipeJson(req: express.Request, res: express.Response, body: Record<string, unknown>): void {
   const payload = Buffer.from(JSON.stringify(body));
   res.status(200);
   res.setHeader("content-type", "application/json; charset=utf-8");
   const chunks: Buffer[] = [];
   for (let i = 0; i < payload.length; i += 1024) chunks.push(payload.subarray(i, i + 1024));
-  pipePaid(res, chunks);
+  pipePaid(req, res, chunks);
 }
 
-app.get("/receipt", (_req, res) => {
-  pipeJson(res, {
+app.get("/receipt", (req, res) => {
+  pipeJson(req, res, {
     ok: true,
     product: "Wisdom Receipt V1",
     price_usd: 1.0,
@@ -201,7 +212,7 @@ app.get("/knowledge", (req, res) => {
     type: parsePaidType(req.query.type),
     settlement_tx: null,
   });
-  pipeJson(res, {
+  pipeJson(req, res, {
     ok: true,
     ...result,
     pointer: POINTER,

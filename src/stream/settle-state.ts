@@ -1,9 +1,21 @@
 export type BufferSettleState = "PENDING" | "NOT_VERIFIED" | "HEADER_OBSERVED" | "FAILED";
 
+export interface HeaderCorrelation {
+  requestId: string;
+  resource: string;
+  payTo: string;
+  price: string;
+  network: string;
+  capturedAt: string;
+  headerType: string;
+  headerRaw: unknown;
+}
+
 export interface BufferSettleRecord {
   state: BufferSettleState;
   note: string;
   header?: string;
+  correlation?: HeaderCorrelation;
 }
 
 export function createSettleRecord(): BufferSettleRecord {
@@ -23,8 +35,18 @@ export function markFailed(record: BufferSettleRecord, reason: string): void {
   record.note = reason;
 }
 
-export function markHeaderObserved(record: BufferSettleRecord, header?: string): void {
+export function markHeaderObserved(
+  record: BufferSettleRecord,
+  header: unknown,
+  correlation: Omit<HeaderCorrelation, "capturedAt" | "headerType" | "headerRaw">,
+): void {
   record.state = "HEADER_OBSERVED";
-  record.header = header;
-  record.note = "PAYMENT-RESPONSE header was set. Header presence is not independent verification. The body is sealed before this header exists, so the hash is not copied. settlement_tx stays null.";
+  record.header = typeof header === "string" ? header : undefined;
+  record.correlation = {
+    ...correlation,
+    capturedAt: new Date().toISOString(),
+    headerType: Array.isArray(header) ? "array" : typeof header,
+    headerRaw: header,
+  };
+  record.note = "PAYMENT-RESPONSE header observed and correlated to this request. Correlation is not authentication. settlement_tx stays null.";
 }
