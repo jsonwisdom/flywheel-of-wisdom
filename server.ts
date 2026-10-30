@@ -9,8 +9,8 @@
 import "dotenv/config";
 import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
-import { paymentMiddleware } from "@x402/express";
-import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge";
+import { paymentMiddleware, type RoutesConfig } from "@x402/express";
+import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -22,7 +22,7 @@ if (!PAY_TO.startsWith("0x") || PAY_TO.length !== 42) {
 const app = express();
 app.use(express.json());
 
-const routes = {
+const cdpRoutes = {
   "GET /receipt": {
     price: "$1.00",
     networks: ["eip155:8453"],
@@ -43,12 +43,35 @@ const server = await createX402Server({
     type: "address",
     evm: PAY_TO,
   },
-  routes,
+  routes: cdpRoutes,
 });
 
-// Use public resourceServer + RoutesConfig overload to avoid NodeNext
+const middlewareRoutes: RoutesConfig = {
+  "GET /receipt": {
+    accepts: {
+      scheme: "exact",
+      payTo: PAY_TO,
+      price: "$1.00",
+      network: "eip155:8453",
+    },
+    description: "One Wisdom Receipt — $1 USDC on Base",
+    mimeType: "application/json",
+  },
+  "GET /knowledge": {
+    accepts: {
+      scheme: "exact",
+      payTo: PAY_TO,
+      price: "$1.00",
+      network: "eip155:8453",
+    },
+    description: "One KnowledgeObject bundle — $1 USDC on Base",
+    mimeType: "application/json",
+  },
+};
+
+// Public resourceServer + explicit RoutesConfig avoids the NodeNext
 // private-member type collision between X402Server and x402HTTPResourceServer.
-app.use(paymentMiddleware(routes, server.resourceServer));
+app.use(paymentMiddleware(middlewareRoutes, server.resourceServer));
 
 function parsePaidType(raw: unknown): PaidObjectType {
   if (raw === "document" || raw === "receipt" || raw === "answer") return raw;

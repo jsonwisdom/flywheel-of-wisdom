@@ -7,6 +7,7 @@
   "scripts": {
     "start": "tsx server.ts",
     "dev": "tsx watch server.ts",
+    "typecheck": "tsc --noEmit",
     "test:402": "powershell -ExecutionPolicy Bypass -File ./scripts/test-402.ps1"
   },
   "engines": {
@@ -20,6 +21,8 @@
     "express": "^4.21.0"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }
