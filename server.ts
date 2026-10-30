@@ -202,7 +202,7 @@ app.get("/knowledge", (req, res) => {
     ok: true,
     ...result,
     pointer: POINTER,
-    settlement_status: "pending-verification",
+    ...bodySettle(),
     note: pendingSettlementNote() + " " + (result.note ?? ""),
   });
 });
