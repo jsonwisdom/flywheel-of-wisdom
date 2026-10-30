@@ -1,4 +1,9 @@
 import { Readable } from "node:stream";
+import { createSettleRecord, markNotVerified, type BufferSettleRecord } from "./settle-state.js";
+
+export interface PaidReadable extends Readable {
+  settleState: BufferSettleRecord;
+}
 
 /**
  * Readable that respects backpressure.
@@ -8,9 +13,9 @@ import { Readable } from "node:stream";
 export function boundedReadable(
   chunks: Buffer[],
   highWaterMark = 16 * 1024,
-): Readable {
+): PaidReadable {
   let index = 0;
-  return new Readable({
+  const stream = new Readable({
     highWaterMark,
     read() {
       while (index < chunks.length) {
@@ -20,5 +25,8 @@ export function boundedReadable(
       }
       this.push(null);
     },
-  });
+  }) as PaidReadable;
+  stream.settleState = createSettleRecord();
+  markNotVerified(stream.settleState);
+  return stream;
 }

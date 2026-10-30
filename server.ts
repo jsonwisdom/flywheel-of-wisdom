@@ -138,7 +138,9 @@ function pipePaid(res: express.Response, chunks: Buffer[]): void {
   markNotVerified(settle);
   // Settlement wire: piped bytes enter the x402 middleware buffer.
   // Release is settle success. Settle failure discards. pipe is not proof.
-  boundedReadable(chunks).pipe(res);
+  const stream = boundedReadable(chunks);
+  stream.settleState = settle;
+  stream.pipe(res);
   markPiped(record);
 }
 
