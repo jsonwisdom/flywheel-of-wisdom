@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync, fsyncSync } from "node:fs";
 import { dirname } from "node:path";
 
@@ -13,9 +13,28 @@ interface Row {
 const PATH = process.env.REPLAY_STORE_PATH ?? "/tmp/flywheel-replay-store.json";
 const LOCK = PATH + ".lock";
 const TTL_MS = Number(process.env.REPLAY_RESERVE_TTL_MS ?? 30_000);
+const LOCK_STALE_MS = Number(process.env.REPLAY_LOCK_STALE_MS ?? 5_000);
 
 function keyOf(header: string): string {
   return createHash("sha256").update(header).digest("hex");
+}
+
+function pidAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  return existsSync(`/proc/${pid}`);
+}
+
+function recoverStaleLock(): void {
+  if (!existsSync(LOCK)) return;
+  try {
+    const raw = JSON.parse(readFileSync(LOCK, "utf8")) as { pid?: number; at?: string };
+    const age = raw.at ? Date.now() - Date.parse(raw.at) : LOCK_STALE_MS + 1;
+    if (raw.pid && pidAlive(raw.pid)) return;
+    if (age < LOCK_STALE_MS) return;
+    unlinkSync(LOCK);
+  } catch {
+    // Unreadable lock is not deleted unless it is old and ownerless.
+  }
 }
 
 function withLock<T>(fn: (rows: Record<string, Row>) => T): T {
@@ -23,6 +42,7 @@ function withLock<T>(fn: (rows: Record<string, Row>) => T): T {
   const start = Date.now();
   let fd = -1;
   while (fd < 0) {
+    recoverStaleLock();
     try {
       fd = openSync(LOCK, "wx");
     } catch {
@@ -30,12 +50,13 @@ function withLock<T>(fn: (rows: Record<string, Row>) => T): T {
       Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5);
     }
   }
+  writeFileSync(fd, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }));
   try {
     const rows: Record<string, Row> = existsSync(PATH)
       ? JSON.parse(readFileSync(PATH, "utf8"))
       : {};
     const result = fn(rows);
-    const tmp = PATH + ".tmp";
+    const tmp = `${PATH}.${process.pid}.${randomUUID()}.tmp`;
     const out = openSync(tmp, "w");
     try {
       writeFileSync(out, JSON.stringify(rows), "utf8");
@@ -47,7 +68,7 @@ function withLock<T>(fn: (rows: Record<string, Row>) => T): T {
     return result;
   } finally {
     closeSync(fd);
-    unlinkSync(LOCK);
+    try { unlinkSync(LOCK); } catch { /* already gone */ }
   }
 }
 
@@ -59,8 +80,10 @@ export function reserve(header: string, owner: string): { accepted: boolean; rea
   return withLock((rows) => {
     const key = keyOf(header);
     const row = rows[key];
-    if (row && !expired(row) && row.state !== "UNSEEN") {
-      return { accepted: false, reason: row.state === "CONSUMED" ? "REPLAY" : "IN_PROGRESS", state: row.state };
+    if (row && expired(row)) delete rows[key];
+    const current = rows[key];
+    if (current && current.state !== "UNSEEN") {
+      return { accepted: false, reason: current.state === "CONSUMED" ? "REPLAY" : "IN_PROGRESS", state: current.state };
     }
     rows[key] = { state: "RESERVED", reservedAt: new Date().toISOString(), owner };
     return { accepted: true, reason: "RESERVED", state: "RESERVED" };
@@ -69,8 +92,13 @@ export function reserve(header: string, owner: string): { accepted: boolean; rea
 
 export function verify(header: string, owner: string): PaymentState {
   return withLock((rows) => {
-    const row = rows[keyOf(header)];
+    const key = keyOf(header);
+    const row = rows[key];
     if (!row || row.owner !== owner || row.state !== "RESERVED") return row?.state ?? "UNSEEN";
+    if (expired(row)) {
+      delete rows[key];
+      return "UNSEEN";
+    }
     row.state = "VERIFIED";
     return "VERIFIED";
   });
