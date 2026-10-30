@@ -4,6 +4,7 @@
  *
  * Pay-to label jaywisdom.base.eth is naming display on the payment rail.
  * It is not JASON_STATE and does not bind Cluster A.
+ * pointer ≠ identity ≠ control ≠ authority. AUTHORITY_CREATED=false.
  */
 import "dotenv/config";
 import express from "express";
@@ -50,22 +51,36 @@ function parsePaidType(raw: unknown): PaidObjectType {
   return "answer";
 }
 
+function pendingSettlementNote(): string {
+  return "Settlement pending verification. Verified transaction hash is in the PAYMENT-RESPONSE header after successful settlement. settlement_tx in body is not independently verified.";
+}
+
+const POINTER = {
+  ens: "jaywisdom.base.eth",
+  kind: "observed_label",
+  identity_join: false,
+  human_binding: false,
+  control_verified: false,
+};
+
 app.get("/receipt", (_req, res) => {
-  const settlement = (res.locals as any).payment?.settlement ?? null;
   res.json({
     ok: true,
     product: "Wisdom Receipt V1",
     price_usd: 1.0,
     network: "base-mainnet",
     pay_to: PAY_TO,
-    ens_label: "jaywisdom.base.eth",
-    settlement_tx: settlement?.transaction ?? settlement?.txHash ?? null,
-    note: "Payment verified by CDP Facilitator. ens_label ≠ operator identity.",
+    pointer: POINTER,
+    settlement_tx: null,
+    settlement_status: "pending-verification",
+    note:
+      pendingSettlementNote() +
+      " Payment destination is the configured address. ENS pointer is an observed label only. " +
+      "pointer ≠ identity ≠ control ≠ authority. AUTHORITY_CREATED=false.",
   });
 });
 
 app.get("/knowledge", (req, res) => {
-  const settlement = (res.locals as any).payment?.settlement ?? null;
   const objectId = typeof req.query.object_id === "string" ? req.query.object_id : "answer:default";
   const body =
     typeof req.query.q === "string" && req.query.q.trim()
@@ -75,9 +90,15 @@ app.get("/knowledge", (req, res) => {
     object_id: objectId,
     body,
     type: parsePaidType(req.query.type),
-    settlement_tx: settlement?.transaction ?? settlement?.txHash ?? null,
+    settlement_tx: null,
   });
-  res.json({ ok: true, ...result });
+  res.json({
+    ok: true,
+    ...result,
+    pointer: POINTER,
+    settlement_status: "pending-verification",
+    note: pendingSettlementNote() + " " + (result.note ?? ""),
+  });
 });
 
 const PORT = Number(process.env.PORT ?? 8402);

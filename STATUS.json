@@ -6,7 +6,11 @@
   "payment_rail": "CDP Facilitator / x402",
   "network": "base-mainnet (eip155:8453)",
   "pay_to": "0xa380552a27b0a5a2874ea7aa52cac09f542002e8",
-  "pay_to_ens": "jaywisdom.base.eth",
+  "pointer_ens": "jaywisdom.base.eth",
+  "pointer_kind": "observed_label",
+  "identity_join": false,
+  "human_binding": false,
+  "control_verified": false,
   "real_wallet_enabled": true,
   "mock_adapter_removed": true,
   "knowledge_pipeline": "v0.1-src",
@@ -14,5 +18,5 @@
   "replay_verified": true,
   "tamper_detection_verified": true,
   "revenue_usd": 0,
-  "notes": "Knowledge/null/manifest pipeline added under src/. GET /knowledge on same $1 rail. flywheel.py remains synthetic fixture. First real $1 settlement still pending. pay_to_ens is a label not identity. AUTHORITY_CREATED=false."
+  "notes": "Knowledge/null/manifest pipeline added under src/. GET /knowledge on same $1 rail. flywheel.py remains synthetic fixture. First real $1 settlement still pending. pointer_ens is an observed label not identity. JOIN=NONE. Settlement tx in body is pending-verification; verified hash is in PAYMENT-RESPONSE header only. AUTHORITY_CREATED=false."
 }

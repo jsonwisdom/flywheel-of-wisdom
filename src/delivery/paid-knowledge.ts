@@ -56,6 +56,9 @@ export function deliverPaidKnowledge(args: {
     proof,
     settlement_tx: args.settlement_tx,
     payment_price_usd: 1,
-    note: "Null-engine classified fields. Merkle membership vs declared root. Settlement tx ≠ identity. AUTHORITY_CREATED=false.",
+    note:
+      "Null-engine classified fields. Merkle membership vs declared root. " +
+      "Settlement tx ≠ identity. ENS pointer ≠ human identity. JOIN=NONE. " +
+      "AUTHORITY_CREATED=false. Verified settlement is in PAYMENT-RESPONSE header only.",
   };
 }
