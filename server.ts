@@ -11,6 +11,7 @@ import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
 import { paymentMiddleware } from "@x402/express";
 import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge.js";
+import { boundedReadable } from "./src/stream/bounded-readable.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -113,6 +114,21 @@ function sendPaid(
     return;
   }
   res.status(status).json(body);
+}
+
+function pipePaid(res: express.Response, chunks: Buffer[]): void {
+  const total = chunks.reduce((n, c) => n + c.length, 0);
+  if (total > PAID_BODY_MAX_BYTES) {
+    res.status(413).json({
+      ok: false,
+      error: "payload_too_large",
+      settlement_tx: null,
+    });
+    return;
+  }
+  // pipe pauses the Readable when the destination write returns false,
+  // and resumes on drain. That is outbound backpressure.
+  boundedReadable(chunks).pipe(res);
 }
 
 
