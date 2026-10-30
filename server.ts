@@ -81,16 +81,22 @@ app.use((req, res, next) => {
   const origWrite = res.write.bind(res);
   const origEnd = res.end.bind(res);
   let committed = false;
+  let failed = false;
+  (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer = () => {
+    failed = true;
+    chunks.length = 0;
+  };
   res.write = ((chunk: unknown, encoding?: BufferEncoding, cb?: () => void) => {
     if (committed) return origWrite(chunk as never, encoding as never, cb as never);
-    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    if (!failed && chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
     if (typeof cb === "function") cb();
     return true;
   }) as typeof res.write;
   res.end = ((chunk?: unknown, encoding?: BufferEncoding, cb?: () => void) => {
     if (committed) return origEnd(chunk as never, encoding as never, cb as never);
-    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
     committed = true;
+    if (failed) return origEnd(chunk as never, encoding as never, cb as never);
+    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
     return origEnd(Buffer.concat(chunks), encoding as never, cb as never);
   }) as typeof res.end;
   next();
@@ -155,6 +161,7 @@ app.get("/knowledge", (req, res) => {
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const message = err instanceof Error ? err.message : "unknown";
   console.error("paid-route error", message);
+  (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer?.();
   if (res.headersSent) {
     res.destroy(err instanceof Error ? err : new Error(message));
     return;
