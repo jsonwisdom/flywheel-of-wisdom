@@ -127,8 +127,10 @@ function pipePaid(res: express.Response, chunks: Buffer[]): void {
     });
     return;
   }
-  // pipe pauses the Readable when the destination write returns false,
-  // and resumes on drain. That is outbound backpressure.
+  // Settlement wire: this pipe writes into the x402 middleware buffer.
+  // The middleware does not release those bytes until settle succeeds.
+  // Settle failure discards the buffer. pipe is not a settlement proof.
+  // Backpressure: pipe pauses when the destination write returns false.
   boundedReadable(chunks).pipe(res);
 }
 
