@@ -16,6 +16,12 @@ export interface BufferSettleRecord {
   note: string;
   header?: string;
   correlation?: HeaderCorrelation;
+  auth?: {
+    decoded: boolean;
+    structureValid: boolean;
+    authenticated: false;
+    reason: string;
+  };
 }
 
 export function createSettleRecord(): BufferSettleRecord {

@@ -16,6 +16,7 @@ import { boundedReadable } from "./src/stream/bounded-readable.js";
 import { readInbound } from "./src/stream/inbound-reader.js";
 import { createBufferRecord, markBuffering, markPiped, markRejected } from "./src/stream/buffer-state.js";
 import { createSettleRecord, markHeaderObserved, markNotVerified } from "./src/stream/settle-state.js";
+import { proveHeader } from "./src/stream/header-auth.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -153,6 +154,7 @@ function pipePaid(req: express.Request, res: express.Response, chunks: Buffer[])
         price: "$1.00",
         network: "eip155:8453",
       });
+      settle.auth = proveHeader(value, "eip155:8453");
     }
     return origSetHeader(name, value);
   }) as typeof res.setHeader;
