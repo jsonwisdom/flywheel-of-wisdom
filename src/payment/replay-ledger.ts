@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync, fsyncSync, closeSync } from "node:fs";
 import { dirname } from "node:path";
 
 export type PaymentState = "UNSEEN" | "RESERVED" | "VERIFIED" | "CONSUMED" | "FAILED";
@@ -9,13 +9,25 @@ const states = new Map<string, PaymentState>();
 
 function load(): void {
   if (!existsSync(LEDGER_PATH)) return;
-  const raw = JSON.parse(readFileSync(LEDGER_PATH, "utf8")) as Record<string, PaymentState>;
-  for (const [key, state] of Object.entries(raw)) states.set(key, state);
+  try {
+    const raw = JSON.parse(readFileSync(LEDGER_PATH, "utf8")) as Record<string, PaymentState>;
+    for (const [key, state] of Object.entries(raw)) states.set(key, state);
+  } catch {
+    // Truncated or invalid ledger is not loaded. Prior atomic rename avoids this on clean writes.
+  }
 }
 
 function persist(): void {
   mkdirSync(dirname(LEDGER_PATH), { recursive: true });
-  writeFileSync(LEDGER_PATH, JSON.stringify(Object.fromEntries(states)), "utf8");
+  const tmp = LEDGER_PATH + ".tmp";
+  const fd = openSync(tmp, "w");
+  try {
+    writeFileSync(fd, JSON.stringify(Object.fromEntries(states)), "utf8");
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
+  renameSync(tmp, LEDGER_PATH);
 }
 
 load();
@@ -48,7 +60,7 @@ export function markVerified(header: string): PaymentState {
 
 export function consumePayment(header: string): PaymentState {
   const key = paymentKey(header);
-  if (states.get(key) !== "VERIFIED" && states.get(key) !== "RESERVED") return states.get(key) ?? "UNSEEN";
+  if (states.get(key) !== "VERIFIED") return states.get(key) ?? "UNSEEN";
   states.set(key, "CONSUMED");
   persist();
   return "CONSUMED";
