@@ -128,6 +128,18 @@ app.get("/knowledge", (req, res) => {
   });
 });
 
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const message = err instanceof Error ? err.message : "unknown";
+  console.error("paid-route error", message);
+  if (res.headersSent) return;
+  res.status(500).json({
+    ok: false,
+    error: "internal_error",
+    settlement_tx: null,
+    pointer: POINTER,
+  });
+});
+
 const PORT = Number(process.env.PORT ?? 8402);
 app.listen(PORT, () => {
   console.log(`Flywheel x402 rail live on http://localhost:${PORT}`);
