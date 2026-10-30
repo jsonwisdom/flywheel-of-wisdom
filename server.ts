@@ -73,102 +73,6 @@ const middlewareRoutes = {
 // between X402Server and x402HTTPResourceServer.
 app.use(paymentMiddleware(middlewareRoutes, server.resourceServer));
 
-// Second-line commit gate for paid routes.
-// HandlerComplete is not SettlementVerified. The x402 middleware remains the
-// settlement release boundary. This gate holds bytes until end or error.
-// Backpressure: write returns false above the high-water mark; drain fires on commit.
-// Overflow: 413, buffer discarded, no protected body.
-const PAID_BUFFER_MAX_BYTES = 1_048_576;
-const PAID_HIGH_WATER_MARK = 16 * 1024;
-
-function toBuffer(chunk: unknown, encoding?: BufferEncoding): Buffer {
-  if (chunk == null) return Buffer.alloc(0);
-  if (Buffer.isBuffer(chunk)) return chunk;
-  if (typeof chunk === "string") return Buffer.from(chunk, encoding);
-  if (chunk instanceof Uint8Array) return Buffer.from(chunk);
-  return Buffer.from(String(chunk));
-}
-
-app.use((req, res, next) => {
-  if (req.path !== "/receipt" && req.path !== "/knowledge") return next();
-  const chunks: Buffer[] = [];
-  const pendingCbs: Array<() => void> = [];
-  let bufferedBytes = 0;
-  const origEnd = res.end.bind(res);
-  let committed = false;
-  let failed = false;
-  let belowMark = true;
-
-  const flushCbs = () => {
-    const cbs = pendingCbs.splice(0);
-    for (const cb of cbs) cb();
-  };
-
-  const failClosed = (reason: string) => {
-    failed = true;
-    chunks.length = 0;
-    bufferedBytes = 0;
-    console.error("paid-route buffer", reason);
-  };
-
-  (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer = () => {
-    failClosed("discarded");
-    flushCbs();
-  };
-
-  res.write = ((chunk: unknown, encoding?: BufferEncoding, cb?: () => void) => {
-    if (committed || failed) {
-      if (typeof cb === "function") cb();
-      return false;
-    }
-    if (chunk != null) {
-      const buf = toBuffer(chunk, encoding);
-      if (bufferedBytes + buf.length > PAID_BUFFER_MAX_BYTES) {
-        failClosed("overflow");
-        if (!res.headersSent) res.status(413);
-        if (typeof cb === "function") cb();
-        return false;
-      }
-      chunks.push(buf);
-      bufferedBytes += buf.length;
-    }
-    if (typeof cb === "function") pendingCbs.push(cb);
-    const ok = bufferedBytes <= PAID_HIGH_WATER_MARK;
-    if (!ok) belowMark = false;
-    return ok;
-  }) as typeof res.write;
-
-  res.end = ((chunk?: unknown, encoding?: BufferEncoding, cb?: () => void) => {
-    if (committed) return origEnd(chunk as never, encoding as never, cb as never);
-    committed = true;
-    if (failed) {
-      flushCbs();
-      if (!res.headersSent) res.status(413);
-      return origEnd(undefined as never, encoding as never, cb as never);
-    }
-    if (chunk != null) {
-      const buf = toBuffer(chunk, encoding);
-      if (bufferedBytes + buf.length > PAID_BUFFER_MAX_BYTES) {
-        failClosed("overflow");
-        flushCbs();
-        if (!res.headersSent) res.status(413);
-        return origEnd(undefined as never, encoding as never, cb as never);
-      }
-      chunks.push(buf);
-    }
-    const body = Buffer.concat(chunks);
-    chunks.length = 0;
-    bufferedBytes = 0;
-    const result = origEnd(body, encoding as never, cb as never);
-    flushCbs();
-    if (!belowMark) res.emit("drain");
-    return result;
-  }) as typeof res.end;
-
-  next();
-});
-
-
 function parsePaidType(raw: unknown): PaidObjectType {
   if (raw === "document" || raw === "receipt" || raw === "answer") return raw;
   return "answer";
@@ -185,6 +89,33 @@ const POINTER = {
   human_binding: false,
   control_verified: false,
 };
+
+const PAID_BODY_MAX_BYTES = 1_048_576;
+
+function sendPaid(
+  res: express.Response,
+  status: number,
+  body: Buffer | string | Record<string, unknown>,
+): void {
+  const payload = Buffer.isBuffer(body)
+    ? body
+    : Buffer.from(typeof body === "string" ? body : JSON.stringify(body));
+  if (payload.length > PAID_BODY_MAX_BYTES) {
+    res.status(413).json({
+      ok: false,
+      error: "payload_too_large",
+      settlement_tx: null,
+    });
+    return;
+  }
+  if (Buffer.isBuffer(body) || typeof body === "string") {
+    res.status(status).send(payload);
+    return;
+  }
+  res.status(status).json(body);
+}
+
+
 
 app.get("/receipt", (_req, res) => {
   res.json({
@@ -227,12 +158,11 @@ app.get("/knowledge", (req, res) => {
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const message = err instanceof Error ? err.message : "unknown";
   console.error("paid-route error", message);
-  (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer?.();
   if (res.headersSent) {
     res.destroy(err instanceof Error ? err : new Error(message));
     return;
   }
-  res.status(500).json({
+  sendPaid(res, 500, {
     ok: false,
     error: "internal_error",
     settlement_tx: null,
