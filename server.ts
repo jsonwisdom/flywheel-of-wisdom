@@ -132,7 +132,7 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
   const message = err instanceof Error ? err.message : "unknown";
   console.error("paid-route error", message);
   if (res.headersSent) {
-    res.end();
+    res.destroy(err instanceof Error ? err : new Error(message));
     return;
   }
   res.status(500).json({
