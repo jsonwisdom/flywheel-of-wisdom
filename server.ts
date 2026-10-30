@@ -73,32 +73,71 @@ const middlewareRoutes = {
 // between X402Server and x402HTTPResourceServer.
 app.use(paymentMiddleware(middlewareRoutes, server.resourceServer));
 
-// Commit gate: buffer the response body until the handler finishes.
-// On error before commit, discard the buffer and send a fail-closed body.
+// Second-line commit gate for paid routes.
+// HandlerComplete is not SettlementVerified. This gate only holds bytes until
+// the handler ends or fails. The x402 middleware remains the settlement release
+// boundary: it buffers until settle succeeds, and discards on settle failure.
+// This gate adds: discard-on-error, a hard size limit, and fail-closed overflow.
+const PAID_BUFFER_MAX_BYTES = 1_048_576;
+
+function toBuffer(chunk: unknown, encoding?: BufferEncoding): Buffer {
+  if (chunk == null) return Buffer.alloc(0);
+  if (Buffer.isBuffer(chunk)) return chunk;
+  if (typeof chunk === "string") return Buffer.from(chunk, encoding);
+  if (chunk instanceof Uint8Array) return Buffer.from(chunk);
+  return Buffer.from(String(chunk));
+}
+
 app.use((req, res, next) => {
   if (req.path !== "/receipt" && req.path !== "/knowledge") return next();
   const chunks: Buffer[] = [];
+  let bufferedBytes = 0;
   const origWrite = res.write.bind(res);
   const origEnd = res.end.bind(res);
   let committed = false;
   let failed = false;
-  (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer = () => {
+
+  const failClosed = (reason: string) => {
     failed = true;
     chunks.length = 0;
+    bufferedBytes = 0;
+    console.error("paid-route buffer", reason);
   };
+
+  (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer = () => {
+    failClosed("discarded");
+  };
+
   res.write = ((chunk: unknown, encoding?: BufferEncoding, cb?: () => void) => {
     if (committed) return origWrite(chunk as never, encoding as never, cb as never);
-    if (!failed && chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    if (!failed && chunk != null) {
+      const buf = toBuffer(chunk, encoding);
+      if (bufferedBytes + buf.length > PAID_BUFFER_MAX_BYTES) {
+        failClosed("overflow");
+      } else {
+        chunks.push(buf);
+        bufferedBytes += buf.length;
+      }
+    }
     if (typeof cb === "function") cb();
     return true;
   }) as typeof res.write;
+
   res.end = ((chunk?: unknown, encoding?: BufferEncoding, cb?: () => void) => {
     if (committed) return origEnd(chunk as never, encoding as never, cb as never);
     committed = true;
-    if (failed) return origEnd(chunk as never, encoding as never, cb as never);
-    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    if (failed) return origEnd(undefined as never, encoding as never, cb as never);
+    if (chunk != null) {
+      const buf = toBuffer(chunk, encoding);
+      if (bufferedBytes + buf.length > PAID_BUFFER_MAX_BYTES) {
+        failClosed("overflow");
+        return origEnd(undefined as never, encoding as never, cb as never);
+      }
+      chunks.push(buf);
+    }
     return origEnd(Buffer.concat(chunks), encoding as never, cb as never);
   }) as typeof res.end;
+
   next();
 });
 

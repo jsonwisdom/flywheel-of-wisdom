@@ -62,3 +62,9 @@ them real settlement hashes instead of `MOCK-` references.
 Settlement transaction hash in the response body is intentionally null.
 Verified settlement is available only in the PAYMENT-RESPONSE header after
 successful settlement. Body claims are not independently verified.
+
+## Paid response buffer
+
+Paid routes buffer the response body until the handler ends. On handler error the buffer is discarded and the client receives a fail-closed 500 with `settlement_tx: null`. The buffer has a 1 MiB limit; overflow fails closed.
+
+Handler completion is not settlement verification. The x402 middleware remains the settlement release boundary. Body `settlement_tx` stays null. The PAYMENT-RESPONSE header is not independently authenticated by this application.
