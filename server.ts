@@ -73,6 +73,30 @@ const middlewareRoutes = {
 // between X402Server and x402HTTPResourceServer.
 app.use(paymentMiddleware(middlewareRoutes, server.resourceServer));
 
+// Commit gate: buffer the response body until the handler finishes.
+// On error before commit, discard the buffer and send a fail-closed body.
+app.use((req, res, next) => {
+  if (req.path !== "/receipt" && req.path !== "/knowledge") return next();
+  const chunks: Buffer[] = [];
+  const origWrite = res.write.bind(res);
+  const origEnd = res.end.bind(res);
+  let committed = false;
+  res.write = ((chunk: unknown, encoding?: BufferEncoding, cb?: () => void) => {
+    if (committed) return origWrite(chunk as never, encoding as never, cb as never);
+    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    if (typeof cb === "function") cb();
+    return true;
+  }) as typeof res.write;
+  res.end = ((chunk?: unknown, encoding?: BufferEncoding, cb?: () => void) => {
+    if (committed) return origEnd(chunk as never, encoding as never, cb as never);
+    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    committed = true;
+    return origEnd(Buffer.concat(chunks), encoding as never, cb as never);
+  }) as typeof res.end;
+  next();
+});
+
+
 function parsePaidType(raw: unknown): PaidObjectType {
   if (raw === "document" || raw === "receipt" || raw === "answer") return raw;
   return "answer";
