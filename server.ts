@@ -73,6 +73,36 @@ const middlewareRoutes = {
 // between X402Server and x402HTTPResourceServer.
 app.use(paymentMiddleware(middlewareRoutes, server.resourceServer));
 
+// Commit gate: buffer the response body until the handler finishes.
+// On error before commit, discard the buffer and send a fail-closed body.
+app.use((req, res, next) => {
+  if (req.path !== "/receipt" && req.path !== "/knowledge") return next();
+  const chunks: Buffer[] = [];
+  const origWrite = res.write.bind(res);
+  const origEnd = res.end.bind(res);
+  let committed = false;
+  let failed = false;
+  (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer = () => {
+    failed = true;
+    chunks.length = 0;
+  };
+  res.write = ((chunk: unknown, encoding?: BufferEncoding, cb?: () => void) => {
+    if (committed) return origWrite(chunk as never, encoding as never, cb as never);
+    if (!failed && chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    if (typeof cb === "function") cb();
+    return true;
+  }) as typeof res.write;
+  res.end = ((chunk?: unknown, encoding?: BufferEncoding, cb?: () => void) => {
+    if (committed) return origEnd(chunk as never, encoding as never, cb as never);
+    committed = true;
+    if (failed) return origEnd(chunk as never, encoding as never, cb as never);
+    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+    return origEnd(Buffer.concat(chunks), encoding as never, cb as never);
+  }) as typeof res.end;
+  next();
+});
+
+
 function parsePaidType(raw: unknown): PaidObjectType {
   if (raw === "document" || raw === "receipt" || raw === "answer") return raw;
   return "answer";
@@ -125,6 +155,22 @@ app.get("/knowledge", (req, res) => {
     pointer: POINTER,
     settlement_status: "pending-verification",
     note: pendingSettlementNote() + " " + (result.note ?? ""),
+  });
+});
+
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const message = err instanceof Error ? err.message : "unknown";
+  console.error("paid-route error", message);
+  (res as express.Response & { discardPaidBuffer?: () => void }).discardPaidBuffer?.();
+  if (res.headersSent) {
+    res.destroy(err instanceof Error ? err : new Error(message));
+    return;
+  }
+  res.status(500).json({
+    ok: false,
+    error: "internal_error",
+    settlement_tx: null,
+    pointer: POINTER,
   });
 });
 
