@@ -6,7 +6,8 @@ import { join } from "node:path";
 import { once } from "node:events";
 import { spawnSync } from "node:child_process";
 import express from "express";
-import { paymentMiddlewareFromHTTPServer } from "@x402/express";
+import { paymentMiddlewareFromHTTPServer, paymentMiddleware } from "@x402/express";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { x402ResourceServer, AfterSettleAbortError } from "@x402/core/server";
 import {WisdomLedger,lookupReceipt,SEP,TRANSFER} from "../ledger.mjs";
 
@@ -157,4 +158,28 @@ test("V18 standalone backend remains disabled without explicit testnet opt-in",(
    encoding:"utf8",timeout:8000});
  assert.notEqual(r.status,0);
  assert.match(r.stderr,/HOLD: set FLYWHEEL_TESTNET_ENABLE/);
+});
+
+test("V19 real x402 v2 route config produces a 402 challenge with 1 Sepolia USDC",async()=>{
+ const fakeFacilitator={async getSupported(){return {kinds:[{x402Version:2,scheme:"exact",network:SEP.network}],extensions:[]}}};
+ const core=new x402ResourceServer(fakeFacilitator).register(SEP.network,new ExactEvmScheme());
+ const routes={"GET /knowledge":{accepts:{scheme:"exact",network:SEP.network,payTo:PAY_TO,price:"$1.00"},
+    description:"One KnowledgeObject — Base Sepolia only",mimeType:"application/json"}};
+ const app=express();
+ app.use(paymentMiddleware(routes,core,undefined,undefined,false));
+ app.get("/knowledge",(_req,res)=>res.status(200).send("NEVER_UNPAID"));
+ const server=app.listen(0,"127.0.0.1");await once(server,"listening");
+ let r;
+ try{r=await fetch("http://127.0.0.1:"+server.address().port+"/knowledge?object_id=answer:default",
+   {headers:{"accept":"application/json"}})}
+ finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()))}
+ assert.equal(r.status,402);
+ const header=r.headers.get("PAYMENT-REQUIRED");assert.ok(header);
+ const challenge=JSON.parse(Buffer.from(header,"base64").toString("utf8"));
+ assert.equal(challenge.x402Version,2);
+ const accept=challenge.accepts.find(a=>a.network===SEP.network&&a.scheme==="exact");
+ assert.ok(accept);assert.equal(accept.amount,"1000000");
+ assert.equal(accept.asset.toLowerCase(),SEP.usdc.toLowerCase());
+ assert.equal(accept.payTo.toLowerCase(),PAY_TO.toLowerCase());
+ assert.equal((await r.text()).includes("NEVER_UNPAID"),false);
 });
