@@ -21,3 +21,12 @@ export function verifyKnowledgeProof(receipt){
    receipt.binary_merkle_root===p.binary_merkle_root&&a===b;
  }catch{return false}
 }
+
+/** Offline: prove the exact bytes the client received belong to this receipt. */
+export function verifyPaidResponse(rawUtf8,receipt){
+ if(typeof rawUtf8!=="string"||!receipt||!verifyKnowledgeProof(receipt))return false;
+ let p;try{p=JSON.parse(rawUtf8)}catch{return false}
+ return p.object_id===receipt.object_id&&p.version_id===receipt.version_id&&
+  p.content_sha256===receipt.content_sha256&&typeof p.body==="string"&&
+  sha(p.body)===receipt.content_sha256&&sha(rawUtf8)===receipt.response_sha256;
+}
