@@ -4,6 +4,7 @@
  */
 import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
+import { knowledgeProof, verifyKnowledgeProof } from "./merkle.mjs";
 
 export const SEP = Object.freeze({
   network:"eip155:84532",chain:84532,
@@ -87,10 +88,12 @@ export class WisdomLedger {
     demand(row.response_sha256===sha(t.responseBody),"BUFFER_HASH_MISMATCH");
 
     const tx_hash=lower(s.transaction),settled_at=new Date().toISOString();
+    const merkle=knowledgeProof(row.object_id,row.version_id,row.content_sha256);
     const receiptBody={
       schema_version:"wisdom_receipt.v1",network:SEP.network,chain_id:SEP.chain,
       tx_hash,intent_id:id,object_id:row.object_id,version_id:row.version_id,
       response_sha256:row.response_sha256,content_sha256:row.content_sha256,
+      manifest_root:merkle.manifest_root,binary_merkle_root:merkle.binary_merkle_root,proof:merkle.proof,
       amount_atomic:SEP.amount,asset:lower(SEP.usdc),pay_to:this.receiver,
       payer:ADDR_RE.test(s.payer??"")?lower(s.payer):null,
       settled_at,settlement_source:"x402_onAfterSettle",
@@ -113,6 +116,7 @@ export class WisdomLedger {
     const receipt=JSON.parse(row.receipt_json),{receipt_id,...base}=receipt;
     demand(receipt_id===sha(canonical(base))&&row.receipt_id===receipt_id,"RECEIPT_HASH_INVALID");
     demand(receipt.tx_hash===lower(hash)&&receipt.network===network&&receipt.intent_id===row.intent_id,"RECEIPT_INDEX_MISMATCH");
+    demand(verifyKnowledgeProof(receipt),"MERKLE_INTEGRITY_FAILURE");
     const intent=this.db.prepare("SELECT * FROM intents WHERE id=?").get(row.intent_id);
     demand(intent?.state==="settled"&&receipt.object_id===intent.object_id&&receipt.content_sha256===intent.content_sha256&&receipt.response_sha256===intent.response_sha256,"INTENT_INTEGRITY_FAILURE");
     return receipt;
