@@ -25,6 +25,14 @@ jobs:
       - name: Test x402 v2 challenge parser (no payment)
         run: node --test scripts/x402-challenge-audit.test.mjs
 
+      - name: Install isolated x402 v2.29.0 lifecycle-test dependencies
+        working-directory: tests/x402-lifecycle
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Test real x402 core and Express settlement lifecycle (MOCK, no funds)
+        working-directory: tests/x402-lifecycle
+        run: npm test
+
       - name: Install dependencies
         run: pip install jsonschema
 
