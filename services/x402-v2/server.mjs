@@ -5,6 +5,8 @@
  * if an operator explicitly starts the service and a payer approves a payment.
  */
 import express from "express";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { x402ResourceServer, HTTPFacilitatorClient, AfterSettleAbortError } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { paymentMiddleware } from "@x402/express";
@@ -21,6 +23,7 @@ const rpcUrl=process.env.BASE_RPC_URL??"https://sepolia.base.org";
 if(!rpcUrl.startsWith("https://"))throw Error("RPC_HTTPS_REQUIRED");
 const dbPath=requireEnv("DB_PATH");
 if(dbPath===":memory:")throw Error("PERSISTENT_DB_REQUIRED");
+mkdirSync(dirname(dbPath),{recursive:true,mode:0o700});
 const ledger=new WisdomLedger(dbPath,payTo);
 const rpc=(()=>{
  let seq=0;
@@ -40,6 +43,7 @@ const objects=new Map([["answer:default",{id:"answer:default",version:"v0.1.0",
   body:"Flywheel of Wisdom — payment verifies access, not truth. AUTHORITY_CREATED=false."}]]);
 const server=new x402ResourceServer(new HTTPFacilitatorClient({url:facilitatorUrl}))
  .register(SEP.network,new ExactEvmScheme());
+await server.initialize(); // refuse to listen unless facilitator confirms supported Sepolia capabilities
 server.onAfterSettle(async ctx=>{
  try{ledger.settle(ctx)}
  catch(e){console.error(JSON.stringify({event:"RECONCILE_AFTER_SETTLE",reason:e.message,
@@ -55,7 +59,7 @@ app.get("/knowledge",(req,res,next)=>{
 });
 const routes={"GET /knowledge":{accepts:{scheme:"exact",network:SEP.network,
   payTo:ledger.receiver,price:"$1.00"},description:"One KnowledgeObject — Base Sepolia only",mimeType:"application/json"}};
-app.use(paymentMiddleware(routes,server));
+app.use(paymentMiddleware(routes,server,undefined,undefined,false));
 app.get("/knowledge",(req,res)=>{
  const id=typeof req.query.object_id==="string"?req.query.object_id:"answer:default",entry=objects.get(id);
  if(!entry)return res.status(400).json({status:"UNKNOWN_OBJECT_ID"});
