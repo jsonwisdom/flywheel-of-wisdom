@@ -49,9 +49,9 @@ Sources:
 ## Executed test evidence
 
 - L1–L3: tests/x402-lifecycle/lifecycle.test.mjs — **5/5** passing against real @x402/core and @x402/express v2.29.0, mock facilitator (not real payment).
-- Replay 003: tests/x402-lifecycle/replay003.test.mjs — **16/16** passing against SDK hooks, Express receipt responses, fake RPC and temporary local file store. Tests include hook adapter binding, response-object mismatch rejection, persistence failure abort, duplicate tx identity conflict, L4 amount/revert failure, L5 stable receipt_id, L6 missing/unbound transactions and corrupted store failure, L7 incomplete client state, L8 wrong chain.
+- Replay 003: tests/x402-lifecycle/replay003.test.mjs — **17/17** passing against SDK hooks, Express receipt responses, fake RPC and temporary local file store. Tests include actual Express adapter-to-SDK onAfterSettle integration (B5), hook adapter binding, response-object mismatch rejection, persistence failure abort, duplicate tx identity conflict, L4 amount/revert failure, L5 stable receipt_id, L6 missing/unbound transactions and corrupted store failure, L7 incomplete client state, L8 wrong chain.
 - Challenge validation: scripts/x402-challenge-audit.test.mjs — **18/18** passing.
-- GitHub Actions run: https://github.com/jsonwisdom/flywheel-of-wisdom/actions/runs/41330321973 ; 39 checks in the two JS suites (18 + 21) plus existing Python synthetic tests. Inspect job logs for precise results.
+- GitHub Actions run: https://github.com/jsonwisdom/flywheel-of-wisdom/actions/runs/41330565524 ; 40 checks in the two JS suites (18 + 22) plus existing Python synthetic tests. Inspect job logs for precise results.
 
 ## Security and delivery boundary
 
