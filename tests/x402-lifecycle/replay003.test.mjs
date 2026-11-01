@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { once } from 'node:events';
 import express from 'express';
 import { x402ResourceServer, AfterSettleAbortError } from '@x402/core/server';
+import { paymentMiddlewareFromHTTPServer } from '@x402/express';
 
 const C={network:'eip155:84532',chainId:84532,asset:'0x036CbD53842c5426634e7929541eC2318f3dCF7e',
  payTo:'0xa380552a27b0a5a2874ea7aa52cac09f542002e8',amount:'1000000',scheme:'exact'};
@@ -203,4 +204,37 @@ test('L8b forged receipt wrong chain is not accepted by client',async()=>{
 test('L7b correctly bound, verified receipt passes client state check',async()=>{
  const r=await endpoint(await funded(),rpc(),TX);
  assert.equal(clientState({success:true,transaction:TX,network:C.network},r.body),'DELIVERY_CONFIRMED');
+});
+
+test('B5 end-to-end Express adapter passes real request and buffered response to onAfterSettle',async()=>{
+ const s=await fresh(),calls=[];
+ const facilitator={async settle(){return {success:true,transaction:TX,network:C.network,payer:'0x'+'22'.repeat(20)}}};
+ const core=new x402ResourceServer(facilitator);
+ core.onAfterSettle(async c=>{calls.push({path:c.transportContext?.request?.path,
+  query:c.transportContext?.request?.adapter?.getQueryParam('object_id'),
+  hasBuffer:Buffer.isBuffer(c.transportContext?.responseBody),
+  originalUrl:c.transportContext?.request?.adapter?.getUrl()});await hook(s)(c)});
+ const fake={
+  routes:{},server:{hasExtension:()=>false},
+  requiresPayment:({path,method})=>path==='/knowledge'&&method==='GET',
+  async processHTTPRequest(){return {type:'payment-verified',paymentPayload:PAYLOAD,paymentRequirements:REQ,
+    declaredExtensions:{},cancellationDispatcher:{async cancel(){}}}},
+  async processSettlement(payload,req,ext,transport){
+   const result=await core.settlePayment(payload,req,ext,transport);
+   return result.success?{success:true,headers:{'PAYMENT-RESPONSE':Buffer.from(JSON.stringify(result)).toString('base64')}}:
+    {success:false,response:{status:502,headers:{'content-type':'application/json'},body:{error:result.errorReason||'settle_failed'}}};
+  }
+ };
+ const app=express();
+ app.use(paymentMiddlewareFromHTTPServer(fake,undefined,undefined,false));
+ app.get('/knowledge',(req,res)=>res.status(200).json({object_id:req.query.object_id,body:PRIVATE}));
+ const server=app.listen(0,'127.0.0.1');await once(server,'listening');
+ let response;
+ try {response=await fetch('http://127.0.0.1:'+server.address().port+'/knowledge?object_id=answer:default')}
+ finally {await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()))}
+ assert.equal(response.status,200);assert.equal((await response.json()).body,PRIVATE);
+ assert.deepEqual(calls.map(c=>({path:c.path,query:c.query,hasBuffer:c.hasBuffer})),
+  [{path:'/knowledge',query:'answer:default',hasBuffer:true}]);
+ assert.match(calls[0].originalUrl,/\/knowledge\?object_id=answer:default$/);
+ assert.equal((await s.get(TX)).object_id,'answer:default');
 });
