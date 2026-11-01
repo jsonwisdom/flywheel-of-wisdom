@@ -163,6 +163,7 @@ test("V18 standalone backend remains disabled without explicit testnet opt-in",(
 test("V19 real x402 v2 route config produces a 402 challenge with 1 Sepolia USDC",async()=>{
  const fakeFacilitator={async getSupported(){return {kinds:[{x402Version:2,scheme:"exact",network:SEP.network}],extensions:[]}}};
  const core=new x402ResourceServer(fakeFacilitator).register(SEP.network,new ExactEvmScheme());
+ await core.initialize();
  const routes={"GET /knowledge":{accepts:{scheme:"exact",network:SEP.network,payTo:PAY_TO,price:"$1.00"},
     description:"One KnowledgeObject — Base Sepolia only",mimeType:"application/json"}};
  const app=express();
