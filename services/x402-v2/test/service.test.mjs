@@ -10,6 +10,8 @@ import { paymentMiddlewareFromHTTPServer, paymentMiddleware } from "@x402/expres
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { x402ResourceServer, AfterSettleAbortError } from "@x402/core/server";
 import {WisdomLedger,lookupReceipt,SEP,TRANSFER} from "../ledger.mjs";
+import { knowledgeProof, verifyKnowledgeProof, verifyPaidResponse } from "../merkle.mjs";
+import { createHash } from "node:crypto";
 
 const PAY_TO="0x1111111111111111111111111111111111111111";
 const FROM="0x2222222222222222222222222222222222222222";
@@ -183,4 +185,37 @@ test("V19 real x402 v2 route config produces a 402 challenge with 1 Sepolia USDC
  assert.equal(accept.asset.toLowerCase(),SEP.usdc.toLowerCase());
  assert.equal(accept.payTo.toLowerCase(),PAY_TO.toLowerCase());
  assert.equal((await r.text()).includes("NEVER_UNPAID"),false);
+});
+
+test("V20 single-leaf proof matches original Flywheel domain-separated Merkle algorithm",()=>{
+ const s=fresh(),{ctx}=setup(s),rec=s.settle(ctx);
+ const p=knowledgeProof(rec.object_id,rec.version_id,rec.content_sha256);
+ const sha=v=>"0x"+createHash("sha256").update(v).digest("hex");
+ const path=rec.object_id+".txt";
+ const entryHash=sha("leaf:"+path+":"+rec.content_sha256);
+ const preimage=[path,"answer",rec.object_id,rec.version_id,entryHash].join("\t");
+ assert.equal(rec.manifest_root,sha("manifest-v0\n"+preimage));
+ assert.equal(rec.binary_merkle_root,sha("v0:leaf:"+preimage));
+ assert.equal(rec.proof.leaf,rec.binary_merkle_root);
+ assert.deepEqual(rec.proof.steps,[]);
+ assert.deepEqual(rec.proof,p.proof);
+ assert.equal(verifyKnowledgeProof(rec),true);s.close()
+});
+test("V21 independently verified receipt also binds exact delivered JSON bytes; changing body rejects",()=>{
+ const s=fresh(),{ctx,packet}=setup(s),rec=s.settle(ctx);
+ assert.equal(verifyPaidResponse(packet.response,rec),true);
+ const bad=JSON.stringify({...JSON.parse(packet.response),body:PRIVATE+"TAMPER"});
+ assert.equal(verifyPaidResponse(bad,rec),false);
+ assert.equal(verifyPaidResponse(packet.response.replace('"answer:default"','"answer:other"'),rec),false);s.close()
+});
+test("V22 forged Merkle root rejected even when receipt hash and database index are recomputed",async()=>{
+ const s=bound(),old=s.get(SEP.network,TX);
+ const altered={...old,manifest_root:"0x"+"ff".repeat(32)};
+ const {receipt_id:ignored,...rest}=altered;
+ altered.receipt_id="0x"+createHash("sha256").update(JSON.stringify(Object.fromEntries(Object.keys(rest).sort().map(k=>[k,rest[k]])))).digest("hex");
+ // The forged receipt ID need not be internally canonical for this test; either integrity gate must reject.
+ s.db.prepare("UPDATE receipts SET receipt_id=?,receipt_json=? WHERE network=? AND tx_hash=?")
+   .run(altered.receipt_id,JSON.stringify(altered),SEP.network,TX);
+ const result=await lookupReceipt(s,SEP.network,TX,rpc());
+ assert.equal(result.http,500);assert.equal(result.body.receipt,undefined);s.close()
 });
