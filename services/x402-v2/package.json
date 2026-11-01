@@ -9,12 +9,14 @@
   "scripts": {
     "start": "node --experimental-sqlite server.mjs",
     "test": "node --experimental-sqlite --test test/*.test.mjs",
-    "check": "node --check ledger.mjs && node --check server.mjs"
+    "check": "node --check ledger.mjs && node --check server.mjs && node --check test/client-signing.test.mjs"
   },
   "dependencies": {
     "@x402/core": "2.29.0",
     "@x402/evm": "2.29.0",
     "@x402/express": "2.29.0",
-    "express": "4.22.3"
+    "express": "4.22.3",
+    "@x402/fetch": "2.29.0",
+    "viem": "^2.21.0"
   }
 }
