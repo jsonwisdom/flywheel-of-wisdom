@@ -9,7 +9,7 @@ import express from "express";
 import { paymentMiddlewareFromHTTPServer, paymentMiddleware } from "@x402/express";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { x402ResourceServer, AfterSettleAbortError } from "@x402/core/server";
-import {WisdomLedger,lookupReceipt,SEP,TRANSFER} from "../ledger.mjs";
+import {WisdomLedger,lookupReceipt,canonical,SEP,TRANSFER} from "../ledger.mjs";
 import { knowledgeProof, verifyKnowledgeProof, verifyPaidResponse } from "../merkle.mjs";
 import { createHash } from "node:crypto";
 
@@ -253,14 +253,46 @@ test("V21 independently verified receipt also binds exact delivered JSON bytes; 
  assert.equal(verifyPaidResponse(bad,rec),false);
  assert.equal(verifyPaidResponse(packet.response.replace('"answer:default"','"answer:other"'),rec),false);s.close()
 });
-test("V22 forged Merkle root rejected even when receipt hash and database index are recomputed",async()=>{
- const s=bound(),old=s.get(SEP.network,TX);
- const altered={...old,manifest_root:"0x"+"ff".repeat(32)};
- const {receipt_id:ignored,...rest}=altered;
- altered.receipt_id="0x"+createHash("sha256").update(JSON.stringify(Object.fromEntries(Object.keys(rest).sort().map(k=>[k,rest[k]])))).digest("hex");
- // The forged receipt ID need not be internally canonical for this test; either integrity gate must reject.
+test("V22 isolated Merkle corruption: valid recomputed canonical receipt hash, HTTP 500 MERKLE_INTEGRITY_FAILURE",async()=>{
+ const s=bound(),valid=s.get(SEP.network,TX);
+ const altered={...valid,binary_merkle_root:"0x"+"ff".repeat(32)};
+ const {receipt_id:_omit,...rest}=altered;
+ altered.receipt_id="0x"+createHash("sha256").update(canonical(rest)).digest("hex");
  s.db.prepare("UPDATE receipts SET receipt_id=?,receipt_json=? WHERE network=? AND tx_hash=?")
    .run(altered.receipt_id,JSON.stringify(altered),SEP.network,TX);
+ // Confirm demand() yields its documented bare-code Error message, not a hash failure.
+ let integrityError;
+ try{s.get(SEP.network,TX)}catch(e){integrityError=e}
+ assert.equal(integrityError?.message,"MERKLE_INTEGRITY_FAILURE");
+ assert.notEqual(integrityError?.message,"RECEIPT_HASH_INVALID");
+ // Real Express HTTP path; same lookupReceipt wiring as services/x402-v2/server.mjs.
+ const app=express();
+ app.get("/receipt/:network/:txHash",async(req,res)=>{
+   res.setHeader("Cache-Control","private, no-store");
+   const result=await lookupReceipt(s,req.params.network,req.params.txHash,rpc());
+   res.status(result.http).json(result.body);
+ });
+ const listener=app.listen(0,"127.0.0.1");await once(listener,"listening");
+ let result;
+ try{
+   const response=await fetch("http://127.0.0.1:"+listener.address().port+"/receipt/"+SEP.network+"/"+TX);
+   result={status:response.status,body:await response.json()};
+ }finally{await new Promise((resolve,reject)=>listener.close(e=>e?reject(e):resolve()))}
+ assert.equal(result.status,500);
+ assert.equal(result.body.status,"MERKLE_INTEGRITY_FAILURE");
+ assert.notEqual(result.body.status,"RECEIPT_HASH_INVALID");
+ assert.notEqual(result.body.status,"VERIFIED");
+ assert.equal(result.body.receipt,undefined);
+ s.close();
+});
+test("V23 receipt hash tampering is separately labeled RECEIPT_HASH_INVALID",async()=>{
+ const s=bound(),valid=s.get(SEP.network,TX);
+ const tampered={...valid,manifest_root:"0x"+"ff".repeat(32)};
+ s.db.prepare("UPDATE receipts SET receipt_json=? WHERE network=? AND tx_hash=?")
+   .run(JSON.stringify(tampered),SEP.network,TX);
  const result=await lookupReceipt(s,SEP.network,TX,rpc());
- assert.equal(result.http,500);assert.equal(result.body.receipt,undefined);s.close()
+ assert.equal(result.http,500);
+ assert.equal(result.body.status,"RECEIPT_HASH_INVALID");
+ assert.equal(result.body.receipt,undefined);
+ s.close();
 });
