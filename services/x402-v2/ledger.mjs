@@ -147,7 +147,13 @@ export async function verifyChain(rpc,receipt){
 export async function lookupReceipt(ledger,network,hash,rpc){
   if(network!==SEP.network||!TX_RE.test(hash))return {http:400,body:{status:"BAD_PARAMS"}};
   let receipt;
-  try{receipt=ledger.get(network,hash)}catch{return {http:500,body:{status:"INTEGRITY_FAILURE"}}}
+  try{receipt=ledger.get(network,hash)}catch(err){
+    // Expose only stable receipt-integrity failure codes; never leak raw DB errors.
+    const allowed=new Set(["RECEIPT_HASH_INVALID","MERKLE_INTEGRITY_FAILURE"]);
+    const raw=typeof err?.code==="string"?err.code:err?.message;
+    const code=typeof raw==="string"&&allowed.has(raw)?raw:"INTEGRITY_FAILURE";
+    return {http:500,body:{status:code}};
+  }
   if(!receipt)return {http:404,body:{status:"NOT_FOUND"}};
   let check;try{check=await verifyChain(rpc,receipt)}catch{return {http:502,body:{status:"RPC_UNAVAILABLE"}}}
   if(!check.ok)return {http:409,body:{status:"SETTLEMENT_UNVERIFIED",reason:check.reason}};
