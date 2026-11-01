@@ -1,0 +1,12 @@
+{
+  "name": "flywheel-x402-lifecycle-readonly-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test lifecycle.test.mjs" },
+  "dependencies": {
+    "@x402/express": "2.29.0",
+    "@x402/core": "2.29.0",
+    "express": "4.21.2"
+  }
+}
