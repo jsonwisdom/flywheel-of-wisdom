@@ -33,6 +33,18 @@ jobs:
         working-directory: tests/x402-lifecycle
         run: npm test
 
+      - name: Install funds-disabled Base Sepolia SQLite service dependencies
+        working-directory: services/x402-v2
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Verify gated service syntax (no keys or funds)
+        working-directory: services/x402-v2
+        run: npm run check
+
+      - name: Test transaction-bound receipts and crash safety (MOCK ONLY)
+        working-directory: services/x402-v2
+        run: npm test
+
       - name: Install dependencies
         run: pip install jsonschema
 
