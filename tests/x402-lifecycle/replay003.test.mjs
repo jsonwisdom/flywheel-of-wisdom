@@ -161,7 +161,7 @@ test('S1 concurrent draft attempts produce one persistent write',async()=>{
 });
 test('S2 duplicate tx with different object bound fails closed',async()=>{
  const s=await funded();
- await assert.rejects(()=>s.put({...await s.get(TX),object_id:'answer:other'}),/TX_BINDING_CONFLICT/);
+ const old=await s.get(TX);await assert.rejects(()=>s.put({...old,object_id:'answer:other'}),/TX_BINDING_CONFLICT/);
 });
 test('L4 reverted tx -> HTTP 409, no receipt',async()=>{
  const r=await endpoint(await funded(),rpc({status:'0x0'}),TX);
