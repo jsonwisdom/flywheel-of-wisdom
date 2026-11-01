@@ -1,0 +1,20 @@
+{
+  "name": "flywheel-x402-v2-sepolia-gated",
+  "private": true,
+  "type": "module",
+  "version": "0.4.0",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "node --experimental-sqlite server.mjs",
+    "test": "node --experimental-sqlite --test test/*.test.mjs",
+    "check": "node --check ledger.mjs && node --check server.mjs"
+  },
+  "dependencies": {
+    "@x402/core": "2.29.0",
+    "@x402/evm": "2.29.0",
+    "@x402/express": "2.29.0",
+    "express": "4.22.3"
+  }
+}
