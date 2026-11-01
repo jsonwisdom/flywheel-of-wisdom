@@ -28,7 +28,7 @@ export class WisdomLedger {
     this.receiver=lower(receiver);
     this.db=new DatabaseSync(file);
     this.db.exec("PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;");
-    this.db.exec(\`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS intents (
         id TEXT PRIMARY KEY, object_id TEXT NOT NULL, version_id TEXT NOT NULL,
         content_sha256 TEXT NOT NULL, response_sha256 TEXT NOT NULL,
@@ -39,7 +39,7 @@ export class WisdomLedger {
         receipt_id TEXT NOT NULL UNIQUE, receipt_json TEXT NOT NULL,
         PRIMARY KEY(network,tx_hash), FOREIGN KEY(intent_id) REFERENCES intents(id)
       );
-    \`);
+    `);
   }
   close(){this.db.close()}
   tx(fn){
@@ -55,9 +55,9 @@ export class WisdomLedger {
     const content_sha256=sha(body);
     const response=JSON.stringify({object_id:objectId,version_id:versionId,content_sha256,body});
     const response_sha256=sha(response);
-    this.db.prepare(\`INSERT INTO intents
+    this.db.prepare(`INSERT INTO intents
       (id,object_id,version_id,content_sha256,response_sha256,created_at,state)
-      VALUES(?,?,?,?,?,?,'pending')\`).run(id,objectId,versionId,content_sha256,response_sha256,created_at);
+      VALUES(?,?,?,?,?,?,'pending')`).run(id,objectId,versionId,content_sha256,response_sha256,created_at);
     return {id,response,content_sha256,response_sha256};
   }
   /**
