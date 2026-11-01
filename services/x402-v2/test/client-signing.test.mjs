@@ -58,8 +58,7 @@ async function listening(app){
 }
 function assertSignedPayload(payload){
   assert.equal(payload.x402Version,2);
-  assert.equal(payload.scheme,"exact");
-  assert.equal(payload.network,SEP.network);
+  // x402 v2 PaymentPayload puts selected scheme/network inside accepted, not at top level.
   assert.equal(payload.accepted.scheme,"exact");
   assert.equal(payload.accepted.network,SEP.network);
   assert.ok(eqAddress(payload.accepted.asset,SEP.usdc));
@@ -146,7 +145,7 @@ test("G1 REAL v2 signer -> PAYMENT-SIGNATURE -> real Express middleware -> mock 
     console.log("G1_CLIENT_SIGNING_EVIDENCE "+JSON.stringify({
       sdk:"@x402/fetch @x402/core @x402/evm v2.29.0",
       mode:"TEST_ONLY_LOCALHOST_MOCK_FACILITATOR_NO_FUNDS",
-      scheme:wire.scheme,network:wire.network,
+      scheme:wire.accepted.scheme,network:wire.accepted.network,
       asset:wire.accepted.asset,pay_to:wire.accepted.payTo,
       amount_atomic:wire.accepted.amount,signature_verified_locally:true,
       payment_signature_header:true,verified_mock_calls:calls.verify,
