@@ -122,12 +122,26 @@ test("V16 bad product binding causes real SDK AfterSettleAbortError after fake f
  assert.equal(r.success,false);assert.equal(r.transaction,TX);
  assert.equal(s.get(SEP.network,TX),null);s.close()
 });
-test("V17 Express middleware passes actual adapter, intent header and buffered bytes into real hook",async()=>{
- const s=fresh(),calls=[];
+test("L-body: actual Express bytes exactly equal x402 v2.29.0 onAfterSettle responseBody",async()=>{
+ const s=fresh(),observed=[],wire={};
+ const digest=b=> "0x"+createHash("sha256").update(b).digest("hex");
  const core=new x402ResourceServer({async settle(){return {success:true,transaction:TX,network:SEP.network,payer:FROM}}});
- core.onAfterSettle(async c=>{calls.push({query:c.transportContext?.request?.adapter?.getQueryParam("object_id"),
-    header:c.transportContext?.responseHeaders?.["x-wisdom-intent-id"],buffer:Buffer.isBuffer(c.transportContext?.responseBody)});
-    s.settle(c)});
+ core.onAfterSettle(async c=>{
+   const buffered=c.transportContext?.responseBody;
+   const intentId=c.transportContext?.responseHeaders?.["x-wisdom-intent-id"];
+   const stored=s.db.prepare("SELECT response_sha256 FROM intents WHERE id=?").get(intentId);
+   const bufferBytes=Buffer.isBuffer(buffered)?buffered:null;
+   observed.push({
+     query:c.transportContext?.request?.adapter?.getQueryParam("object_id"),
+     intent_header:typeof intentId==="string",
+     buffer_is_buffer:Buffer.isBuffer(buffered),
+     buffer_sha256:bufferBytes?digest(bufferBytes):null,
+     stored_body_sha256:stored?.response_sha256??null,
+     buffer_length:bufferBytes?.length??null,
+     buffer_matches_handler:bufferBytes?.equals(wire.handlerBytes)??false,
+   });
+   s.settle(c);
+ });
  const reqs={network:SEP.network,scheme:"exact",asset:SEP.usdc,payTo:PAY_TO,amount:SEP.amount,maxTimeoutSeconds:60};
  const fakeHttp={
   routes:{},server:{hasExtension:()=>false},
@@ -142,17 +156,48 @@ test("V17 Express middleware passes actual adapter, intent header and buffered b
  };
  const app=express();app.use(paymentMiddlewareFromHTTPServer(fakeHttp,undefined,undefined,false));
  app.get("/knowledge",(req,res)=>{
-  const item=s.prepare(req.query.object_id??"answer:default",PRIVATE);
-  res.setHeader("X-Wisdom-Intent-Id",item.id);
-  res.setHeader("content-type","application/json");
-  res.status(200).end(item.response);
+   const packet=s.prepare(req.query.object_id??"answer:default",PRIVATE);
+   wire.handlerBytes=Buffer.from(packet.response,"utf8");
+   wire.body_sha256=packet.response_sha256;
+   res.setHeader("X-Wisdom-Intent-Id",packet.id);
+   res.setHeader("content-type","application/json");
+   res.status(200).end(wire.handlerBytes);
  });
  const srv=app.listen(0,"127.0.0.1");await once(srv,"listening");
- let res;try{res=await fetch("http://127.0.0.1:"+srv.address().port+"/knowledge?object_id=answer:default")}
- finally{await new Promise((resolve,reject)=>srv.close(e=>e?reject(e):resolve()))}
- assert.equal(res.status,200);assert.equal((await res.json()).body,PRIVATE);
- assert.equal(calls.length,1);assert.equal(calls[0].query,"answer:default");
- assert.equal(calls[0].buffer,true);assert.equal(typeof calls[0].header,"string");s.close();
+ let res,clientBytes;
+ try{
+   res=await fetch("http://127.0.0.1:"+srv.address().port+"/knowledge?object_id=answer:default");
+   clientBytes=Buffer.from(await res.arrayBuffer());
+ }finally{await new Promise((resolve,reject)=>srv.close(e=>e?reject(e):resolve()))}
+ assert.equal(res.status,200);
+ assert.equal(observed.length,1);
+ const o=observed[0];
+ assert.equal(o.query,"answer:default");
+ assert.equal(o.intent_header,true);
+ assert.equal(o.buffer_is_buffer,true);
+ assert.ok(o.buffer_sha256);
+ assert.equal(o.buffer_sha256,wire.body_sha256);
+ assert.equal(o.buffer_sha256,o.stored_body_sha256);
+ assert.equal(digest(clientBytes),wire.body_sha256);
+ assert.equal(o.buffer_length,wire.handlerBytes.length);
+ assert.equal(o.buffer_matches_handler,true);
+ assert.equal(clientBytes.equals(wire.handlerBytes),true);
+ assert.equal(JSON.parse(clientBytes.toString("utf8")).body,PRIVATE);
+ assert.ok(s.get(SEP.network,TX));
+ console.log("L-BODY-EVIDENCE "+JSON.stringify({
+   sdk:"@x402/core, @x402/express v2.29.0",
+   transport:"Express paymentMiddlewareFromHTTPServer with genuine x402 core onAfterSettle, MOCK settlement",
+   handler_sha256:wire.body_sha256,
+   stored_body_sha256:o.stored_body_sha256,
+   onAfterSettle_responseBody_sha256:o.buffer_sha256,
+   client_response_sha256:digest(clientBytes),
+   byte_length:o.buffer_length,
+   handler_equals_hook:o.buffer_matches_handler,
+   handler_equals_client:clientBytes.equals(wire.handlerBytes),
+   equality:o.buffer_sha256===wire.body_sha256?"PASS":"FAIL",
+   funds_moved:false
+ }));
+ s.close();
 });
 test("V18 standalone backend remains disabled without explicit testnet opt-in",()=>{
  const r=spawnSync(process.execPath,["--experimental-sqlite","server.mjs"],{
