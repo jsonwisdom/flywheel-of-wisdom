@@ -1,0 +1,36 @@
+name: JASON Read-Only Audit Workforce
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
+    - cron: '23 4 * * 1'
+    - cron: '31 5 1 * *'
+permissions:
+  contents: read
+concurrency:
+  group: jason-audit-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        orbit: [inventory, dependencies, knowledge]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read-only audit
+        env:
+          ORBIT: ${{ matrix.orbit }}
+          GITHUB_SHA_SOURCE: ${{ github.sha }}
+        run: node scripts/jason-audit-workforce.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jason-${{ matrix.orbit }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: audit-output/
+          if-no-files-found: error
+          retention-days: 90
