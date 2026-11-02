@@ -1,0 +1,41 @@
+name: JASON 500-SKU Reconciliation CI
+on:
+  pull_request:
+    paths:
+      - 'scripts/jason-reconcile-500.mjs'
+      - 'audit-input/**'
+      - '.github/workflows/jason-reconcile-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reconcile independently observed source snapshots
+        run: node scripts/jason-reconcile-500.mjs audit-input audit-output/reconciliation
+      - name: Assert 500-row Stripe snapshot and no unauthorized checkouts
+        run: |
+          node --input-type=module -e "
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const {summary,matrix}=JSON.parse(fs.readFileSync('audit-output/reconciliation/matrix.json','utf8'));
+          assert.equal(matrix.length,500);
+          assert.equal(summary.coverage.stripe.PRESENT_VERIFIED,500);
+          assert.equal(summary.checkout_ready,0);
+          assert.equal(summary.production_mutation,false);
+          assert.equal(summary.settlement_authorized,false);
+          console.log('500 rows reconciled; 0 authorized checkouts; no production writes');
+          "
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jason-500-reconciliation-${{ github.run_id }}
+          path: audit-output/reconciliation/
+          if-no-files-found: warn
+          retention-days: 90
