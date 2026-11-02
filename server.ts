@@ -18,6 +18,8 @@ if (!PAY_TO.startsWith("0x") || PAY_TO.length !== 42) {
   throw new Error(`Invalid X402_PAY_TO: ${PAY_TO}`);
 }
 
+const CWAAS_ENABLED = process.env.CWAAS_CHECKOUT_RELEASED === "true" && process.env.CWAAS_FULFILLMENT_READY === "true";
+
 const app = express();
 app.use(express.json());
 
@@ -34,6 +36,12 @@ const server = await createX402Server({
       description: "One Wisdom Receipt — $1 USDC on Base",
       mimeType: "application/json",
     },
+    ...(CWAAS_ENABLED ? { "GET /cwaas/report": {
+      price: "$89.00",
+      networks: ["eip155:8453"],
+      description: "CWaaS verification report — one-time $89 USDC on Base",
+      mimeType: "application/json",
+    }} : {}),
     "GET /knowledge": {
       price: "$1.00",
       networks: ["eip155:8453"],
@@ -62,6 +70,16 @@ app.get("/receipt", (_req, res) => {
     settlement_tx: settlement?.transaction ?? settlement?.txHash ?? null,
     note: "Payment verified by CDP Facilitator. ens_label ≠ operator identity.",
   });
+});
+
+if (CWAAS_ENABLED) app.get("/cwaas/report", (req, res) => {
+  const settlement = (res.locals as any).payment?.settlement ?? null;
+  const txHash = settlement?.transaction ?? settlement?.txHash ?? null;
+  if (typeof txHash !== "string" || !/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+    return res.status(503).json({ ok: false, state: "SETTLEMENT_NOT_ESTABLISHED" });
+  }
+  res.set("Cache-Control", "no-store");
+  res.json({ ok: true, state: "PAYMENT_OBSERVED_FULFILLMENT_PENDING", product: "CWaaS verification report", amount_usdc: "89.00", chain_id: 8453, pay_to: PAY_TO, settlement_tx: txHash, note: "Not a completed research report. Fulfillment separately tracked." });
 });
 
 app.get("/knowledge", (req, res) => {
