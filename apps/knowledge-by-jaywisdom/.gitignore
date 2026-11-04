@@ -1,0 +1,4 @@
+.env
+.events/
+node_modules/
+.audit-artifacts/

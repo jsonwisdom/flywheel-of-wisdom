@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+# Coalesce redundant push and PR runs while preserving latest branch checks.
+concurrency:
+  group: flywheel-ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 jobs:
   test-and-replay:
     runs-on: ubuntu-latest

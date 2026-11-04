@@ -1,0 +1,122 @@
+{
+  "schema_version": "jaywisdom_expectations.v1",
+  "project": "Knowledge by JayWisdom / Crypto Congress",
+  "method": "CI_AUDIT_FIRST_EXPECT_AUDIT_RECONSTRUCT_REPLAY",
+  "authority_created": false,
+  "source_policy": {
+    "primary_sources_must_be_retained": true,
+    "news_media_claims_not_truth_proofs": true,
+    "missing_does_not_mean_absent": true,
+    "source_access_may_be_restricted": true,
+    "commercial_reuse_requires_rights_review": true
+  },
+  "expected_slots": [
+    {
+      "id": "congress_bill",
+      "path": "evidence/crypto-congress/bill-record.json",
+      "role": "PRIMARY_SOURCE",
+      "required": true,
+      "expected_sha256": null,
+      "origin": "https://api.congress.gov/",
+      "receipt_class": "ORIGINAL_BYTES_REQUIRED",
+      "reconstruction": "METADATA_TEMPLATE_ONLY"
+    },
+    {
+      "id": "congressional_actions",
+      "path": "evidence/crypto-congress/legislative-actions.json",
+      "role": "PRIMARY_SOURCE",
+      "required": true,
+      "expected_sha256": null,
+      "origin": "https://api.congress.gov/",
+      "receipt_class": "ORIGINAL_BYTES_REQUIRED",
+      "reconstruction": "METADATA_TEMPLATE_ONLY"
+    },
+    {
+      "id": "house_vote",
+      "path": "evidence/crypto-congress/house-vote.json",
+      "role": "PRIMARY_SOURCE",
+      "required": true,
+      "expected_sha256": null,
+      "origin": "https://api.congress.gov/",
+      "receipt_class": "ORIGINAL_BYTES_REQUIRED",
+      "reconstruction": "METADATA_TEMPLATE_ONLY"
+    },
+    {
+      "id": "house_disclosure",
+      "path": "evidence/crypto-congress/house-disclosure-index.json",
+      "role": "PRIMARY_SOURCE",
+      "required": false,
+      "expected_sha256": null,
+      "origin": "https://disclosures-clerk.house.gov/FinancialDisclosure",
+      "receipt_class": "ORIGINAL_BYTES_REQUIRED",
+      "reconstruction": "METADATA_TEMPLATE_ONLY",
+      "commercial_reuse": "RIGHTS_REVIEW_REQUIRED"
+    },
+    {
+      "id": "senate_disclosure",
+      "path": "evidence/crypto-congress/senate-disclosure-index.json",
+      "role": "PRIMARY_SOURCE",
+      "required": false,
+      "expected_sha256": null,
+      "origin": "https://www.ethics.senate.gov/public/index.cfm/financialdisclosure",
+      "receipt_class": "ORIGINAL_BYTES_REQUIRED",
+      "reconstruction": "METADATA_TEMPLATE_ONLY",
+      "commercial_reuse": "RESTRICTED_REVIEW_REQUIRED"
+    },
+    {
+      "id": "claim_set",
+      "path": "evidence/crypto-congress/claim-ledger.json",
+      "role": "DERIVED_ANALYSIS",
+      "required": true,
+      "expected_sha256": null,
+      "origin": "local-verifiable-claim-extraction",
+      "reconstruction": "REBUILDABLE_TEMPLATE"
+    },
+    {
+      "id": "receipt_manifest",
+      "path": "evidence/crypto-congress/evidence-manifest.json",
+      "role": "DERIVED_RECEIPT",
+      "required": true,
+      "expected_sha256": null,
+      "origin": "sha256-original-bytes",
+      "reconstruction": "REBUILDABLE_TEMPLATE"
+    },
+    {
+      "id": "independent_replay",
+      "path": "evidence/crypto-congress/independent-replay.json",
+      "role": "VERIFIER_RECEIPT",
+      "required": true,
+      "expected_sha256": null,
+      "origin": "independent-verifier",
+      "reconstruction": "METADATA_TEMPLATE_ONLY"
+    }
+  ],
+  "release_gates": [
+    "all_required_source_bytes_captured",
+    "every_material_claim_bound_to_exact_source_id_and_content_sha256",
+    "independent_replay_completed",
+    "claim_verdicts_separate_process_from_truth",
+    "commercial_rights_approved_for_any_included_disclosure_data",
+    "operator_approves_release",
+    "x402_base_settlement_separately_verified",
+    "stripe_test_webhook_and_durable_fulfillment_verified"
+  ],
+  "reconstruction_contract": {
+    "identity": "DERIVED_CANDIDATE_NOT_ORIGINAL",
+    "historical_digest_recovered": false,
+    "authority_created": false,
+    "may_auto_generate": [
+      "expected_manifest",
+      "audit_report_template",
+      "claim_ledger_template"
+    ],
+    "must_not_auto_generate": [
+      "primary_source_record",
+      "historical_bytes",
+      "missing_hash_attestation",
+      "vote_record",
+      "financial_disclosure",
+      "paid_entitlement"
+    ]
+  }
+}

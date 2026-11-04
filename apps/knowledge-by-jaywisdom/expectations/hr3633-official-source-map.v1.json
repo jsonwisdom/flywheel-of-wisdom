@@ -1,0 +1,137 @@
+{
+  "schema_version": "jaywisdom_official_source_map.v1",
+  "scope": "Crypto Congress H.R.3633 pilot; not an exclusive definition of Crypto Congress",
+  "bill": {
+    "congress": 119,
+    "type": "HR",
+    "number": 3633,
+    "title": "Digital Asset Market Clarity Act of 2025",
+    "bill_state": "HOUSE_PASSED_SENATE_REPORTED_2026_CLOTURE_TO_PROCEED_NOT_INVOKED_NOT_ENACTED",
+    "observed_as_of": "2026-11-04",
+    "no_presidential_action_source_slot": true
+  },
+  "authority_created": false,
+  "production": "HOLD",
+  "slots": [
+    {
+      "id": "congress_bill",
+      "source_kind": "BILL_TEXT_HOUSE_ENGROSSED",
+      "url": "https://www.govinfo.gov/content/pkg/BILLS-119hr3633eh/html/BILLS-119hr3633eh.htm",
+      "human_reference": "https://www.govinfo.gov/app/details/BILLS-119hr3633eh",
+      "record_id": "BILLS-119hr3633eh",
+      "expected_content_sha256": null,
+      "original_bytes_captured": false,
+      "completeness": "HOUSE_VERSION_ONLY"
+    },
+    {
+      "id": "congressional_actions",
+      "source_kind": "SENATE_FLOOR_ACTIVITY_2026_09_15",
+      "url": "https://www.senate.gov/legislative/LIS/floor_activity/09_15_2026_Senate_Floor.htm",
+      "human_reference": "https://www.senate.gov/legislative/LIS/floor_activity/09_15_2026_Senate_Floor.htm",
+      "record_id": "119-2-senate-floor-2026-09-15",
+      "expected_content_sha256": null,
+      "original_bytes_captured": false,
+      "completeness": "DATE_SCOPED_ACTIVITY_NOT_FULL_BILL_HISTORY"
+    },
+    {
+      "id": "house_vote",
+      "source_kind": "HOUSE_ROLL_CALL_OFFICIAL",
+      "url": "https://clerk.house.gov/Votes/2025199",
+      "human_reference": "https://clerk.house.gov/Votes/2025199",
+      "record_id": "119-1-roll199",
+      "expected_content_sha256": null,
+      "original_bytes_captured": false,
+      "completeness": "HOUSE_PASSAGE_ONLY"
+    }
+  ],
+  "observed_claims": [
+    {
+      "claim_id": "hr3633_house_passage_vote_2025_07_17",
+      "reference_slot": "house_vote",
+      "observed_value": {
+        "yea": 294,
+        "nay": 134,
+        "present": 0,
+        "not_voting": 4
+      },
+      "source_status": "OFFICIAL_WEB_PAGE_OBSERVED",
+      "replayed_raw_bytes": false,
+      "truth_status": "SOURCE_PAGE_SUPPORTS_CLAIM",
+      "authority_created": false
+    },
+    {
+      "claim_id": "hr3633_senate_referral_2025_09_18",
+      "reference_slot": "senate_referral_2025",
+      "observed_value": "received read twice referred to Senate Banking",
+      "source_status": "HISTORICAL_REFERENCE_NOT_CURRENT_ACTION_SLOT",
+      "replayed_raw_bytes": false,
+      "truth_status": "SOURCE_PAGE_SUPPORTS_CLAIM",
+      "authority_created": false
+    },
+    {
+      "claim_id": "hr3633_senate_reported_2026_06_01",
+      "reference_slot": "senate_reported_text",
+      "observed_value": "Senate Banking reported H.R.3633 with amendment in nature of substitute; calendar 423",
+      "source_status": "OFFICIAL_GOVINFO_PAGE_OBSERVED",
+      "replayed_raw_bytes": false,
+      "truth_status": "SOURCE_PAGE_SUPPORTS_CLAIM",
+      "authority_created": false
+    },
+    {
+      "claim_id": "hr3633_senate_cloture_2026_09_15",
+      "reference_slot": "senate_cloture_vote",
+      "observed_value": {
+        "question": "cloture on motion to proceed",
+        "yea": 49,
+        "nay": 50,
+        "not_voting": 1,
+        "result": "REJECTED"
+      },
+      "source_status": "OFFICIAL_SENATE_WEB_PAGE_OBSERVED",
+      "replayed_raw_bytes": false,
+      "truth_status": "SOURCE_PAGE_SUPPORTS_CLAIM",
+      "authority_created": false
+    },
+    {
+      "claim_id": "hr3633_senate_reconsider_2026_09_15",
+      "reference_slot": "congressional_actions",
+      "observed_value": "Senator Tillis entered motion to reconsider the failed cloture vote",
+      "source_status": "OFFICIAL_SENATE_WEB_PAGE_OBSERVED",
+      "replayed_raw_bytes": false,
+      "truth_status": "SOURCE_PAGE_SUPPORTS_CLAIM",
+      "authority_created": false
+    }
+  ],
+  "binding_status": "OFFICIAL_LOCATOR_FOUND_RAW_BYTES_NOT_YET_HASHED",
+  "disclaimer": "Official locators and indexed page observations are not captured historical bytes or independent replay. Three core slots remain contract-required; two Senate related sources are additional pilot inputs. 2025 RFS is historical, not a current Senate actions feed. Cloture rejection is not Senate final passage. No presidential action or authority is asserted.",
+  "related_sources": [
+    {
+      "id": "senate_reported_text",
+      "source_kind": "BILL_TEXT_SENATE_REPORTED_RS",
+      "url": "https://www.govinfo.gov/content/pkg/BILLS-119hr3633rs/html/BILLS-119hr3633rs.htm",
+      "human_reference": "https://www.govinfo.gov/app/details/BILLS-119hr3633rs",
+      "record_id": "BILLS-119hr3633rs",
+      "expected_content_sha256": null,
+      "original_bytes_captured": false,
+      "completeness": "SENATE_REPORTED_VERSION_NOT_ENROLLED"
+    },
+    {
+      "id": "senate_cloture_vote",
+      "source_kind": "SENATE_ROLL_CALL_OFFICIAL",
+      "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00234.htm",
+      "human_reference": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00234.htm",
+      "record_id": "119-2-senate-roll234",
+      "expected_content_sha256": null,
+      "original_bytes_captured": false,
+      "completeness": "MOTION_TO_PROCEED_CLOTURE_NOT_FINAL_PASSAGE"
+    }
+  ],
+  "historical_references": [
+    {
+      "id": "senate_referral_2025",
+      "record_id": "BILLS-119hr3633rfs",
+      "url": "https://www.govinfo.gov/app/details/BILLS-119hr3633rfs",
+      "note": "2025 referral is not 2026 committee-reported text or floor vote"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+name: Knowledge by JayWisdom — CI Audit First (no funds)
+on:
+  push:
+    paths:
+      - "apps/knowledge-by-jaywisdom/**"
+      - ".github/workflows/knowledge-audit-first.yml"
+  pull_request:
+    paths:
+      - "apps/knowledge-by-jaywisdom/**"
+      - ".github/workflows/knowledge-audit-first.yml"
+# Do not stack duplicate push and PR workflows for successive commits.
+concurrency:
+  group: knowledge-audit-first-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  expectation-reconstruction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test expectation engine before running any paid route
+        working-directory: apps/knowledge-by-jaywisdom
+        run: node --test test/*.test.mjs
+      - name: EXPECT / AUDIT / RECONSTRUCT (no network, funds, or secrets)
+        run: node apps/knowledge-by-jaywisdom/audit-first.mjs
+      - name: Independently read back reconstruction and replay hashes
+        run: node apps/knowledge-by-jaywisdom/verify-output.mjs
+      - name: Upload candidate design and audit receipts (not original evidence)
+        id: reconstruction_upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: jaywisdom-ci-audit-first-candidate
+          path: apps/knowledge-by-jaywisdom/.audit-artifacts/
+          retention-days: 30
+          include-hidden-files: true
+          if-no-files-found: error
+      - name: Assert GitHub retained a downloadable reconstruction artifact
+        env:
+          ARTIFACT_ID: ${{ steps.reconstruction_upload.outputs.artifact-id }}
+          ARTIFACT_SHA256: ${{ steps.reconstruction_upload.outputs.artifact-digest }}
+        run: |
+          test -n "$ARTIFACT_ID" || { echo "FAIL: NO_ARTIFACT_ID"; exit 1; }
+          test -n "$ARTIFACT_SHA256" || { echo "FAIL: NO_ARTIFACT_DIGEST"; exit 1; }
+          printf 'PASS: GITHUB_ARTIFACT_ID=%s\n' "$ARTIFACT_ID"
+          printf 'PASS: ARCHIVE_DIGEST_RECORDED\n'
