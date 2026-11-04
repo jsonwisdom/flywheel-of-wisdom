@@ -1,7 +1,7 @@
-import { ingest } from "../knowledge/ingest";
-import { makeEntry, makeManifest } from "../knowledge/knowledge-manifest";
-import { buildTree, prove, type MerkleProof } from "../knowledge/merkle-proof";
-import { entryLeaves } from "../knowledge/manifest-merkle-bridge";
+import { ingest } from "../knowledge/ingest.js";
+import { makeEntry, makeManifest } from "../knowledge/knowledge-manifest.js";
+import { buildTree, prove, type MerkleProof } from "../knowledge/merkle-proof.js";
+import { entryLeaves } from "../knowledge/manifest-merkle-bridge.js";
 
 export type PaidObjectType = "answer" | "document" | "receipt";
 

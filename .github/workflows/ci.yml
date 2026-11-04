@@ -28,6 +28,9 @@ jobs:
       - name: Verify mainnet import compatibility (no keys, no payment)
         run: npm run check:imports
 
+      - name: Verify production Node ESM relative import graph (no keys, no payment)
+        run: npm run check:esm
+
       - name: Test x402 v2 challenge parser (no payment)
         run: node --test scripts/x402-challenge-audit.test.mjs
 
