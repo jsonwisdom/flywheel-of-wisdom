@@ -11,6 +11,10 @@ export const CATALOG = Object.freeze([
     release_state: "HOLD",
     reason: "Operator-approved, hash-bound delivery bytes not yet published",
     content_sha256: null,
+    audit_receipt_sha256: null,
+    independent_replay_receipt_sha256: null,
+    rights_review: "HOLD",
+    operator_approval: "HOLD",
     public_sources: [
       "https://github.com/jsonwisdom/flywheel-of-wisdom/blob/main/docs/replay003-settlement-object-binding.md",
       "https://github.com/jsonwisdom/receiptos-base/blob/main/ACTIVE_LANES.md"
@@ -24,6 +28,10 @@ export const CATALOG = Object.freeze([
     release_state: "HOLD",
     reason: "Original source references, digests, findings and independent review incomplete",
     content_sha256: null,
+    audit_receipt_sha256: null,
+    independent_replay_receipt_sha256: null,
+    rights_review: "HOLD",
+    operator_approval: "HOLD",
     public_sources: [
       "https://github.com/jsonwisdom/flywheel-of-wisdom",
       "https://github.com/jsonwisdom/receiptos-base"
