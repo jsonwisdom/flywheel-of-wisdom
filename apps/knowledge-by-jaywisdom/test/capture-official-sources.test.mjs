@@ -48,7 +48,7 @@ test("three raw captures and receipts replay against independently recalculated 
   const dir=await mkdtemp(join(tmpdir(),"jw-official-fixture-"));
   try {
     const receipt=await captureMap(sourceMap,fakeFetch,dir);
-    assert.equal(receipt.original_count,3);
+    assert.equal(receipt.captured_body_count,3);
     assert.equal(receipt.independent_replay_count,0);
     for (const item of receipt.results) {
       const raw=await readFile(join(dir,item.slot_id+".raw"));
@@ -95,7 +95,7 @@ test("five distinct official record capture fixtures keep core denominator at th
     const receipt=await captureMap(withSenate,fakeFetch,dir,{includeRelated:true});
     assert.equal(receipt.core_slot_count,3);
     assert.equal(receipt.supplementary_source_count,2);
-    assert.equal(receipt.original_count,5);
+    assert.equal(receipt.captured_body_count,5);
     assert.equal(receipt.independent_replay_count,0);
     assert.equal(receipt.publication,"HOLD");
     for (const item of receipt.results) {
