@@ -60,9 +60,9 @@ export async function captureSource(slot, fetchImpl=fetch) {
   if (slot.expected_content_sha256 && slot.expected_content_sha256.toLowerCase()!==digest)
     return {status:"FAIL",reason:"SOURCE_HASH_MISMATCH",observed_sha256:digest,data:null};
   return {
-    status:"CAPTURED_UNREPLAYED",reason:"ORIGINAL_RAW_BYTES_CAPTURED_NOT_INDEPENDENTLY_REPLAYED",
+    status:"CAPTURED_UNREPLAYED",reason:"OFFICIAL_URL_RESPONSE_BYTES_CAPTURED_SOURCE_IDENTITY_UNVERIFIED",
     data,sha256:digest,byte_length:data.byteLength,content_type:type,
-    http_status:response.status,final_url:finalUrl
+    http_status:response.status,final_url:finalUrl,source_identity_verified:false
   };
 }
 export async function captureMap(sourceMap, fetchImpl=fetch, outputDir, {includeRelated=false}={}) {
@@ -88,7 +88,7 @@ export async function captureMap(sourceMap, fetchImpl=fetch, outputDir, {include
       authority_created:false,production:"HOLD"});
   }
   const receipt={schema_version:"jaywisdom_official_capture.v1",results,
-    original_count:results.filter(r=>r.status==="CAPTURED_UNREPLAYED").length,
+    captured_body_count:results.filter(r=>r.status==="CAPTURED_UNREPLAYED").length,\n    source_identity_verified_count:0,
     core_slot_count:sourceMap.slots.length,
     supplementary_source_count:includeRelated ? sourceMap.related_sources.length : 0,
     independent_replay_count:0,publication:"HOLD",authority_created:false};
@@ -107,8 +107,8 @@ if(invoked) {
     const receipt=await captureMap(sourceMap,fetch,
       join(dir,".audit-artifacts/official-inputs"),{includeRelated});
     const expected=receipt.core_slot_count+receipt.supplementary_source_count;
-    console.log(JSON.stringify({captured:receipt.original_count,expected,
+    console.log(JSON.stringify({captured:receipt.captured_body_count,expected,
       independent_replay:receipt.independent_replay_count,publication:"HOLD"}));
-    if(receipt.original_count!==expected)process.exitCode=2;
+    if(receipt.captured_body_count!==expected)process.exitCode=2;
   }
 }
