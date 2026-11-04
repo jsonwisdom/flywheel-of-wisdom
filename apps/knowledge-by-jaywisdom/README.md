@@ -145,3 +145,29 @@ The local capture receipt stores requested and final URL, HTTP status,
 timestamp, content-type, byte count, and SHA-256 whenever successful.
 No automated network requests occur in CI, and no production, Stripe,
 settlement, or publication gates are modified.
+
+## Operator-reported captures, 2026-11-04
+
+The separate `observations/hr3633-2026-11-04-external-capture.v1.json`
+records three GovInfo PDF receipt reports (Senate RS, House EH, House RH) and
+three Senate GET-403 observations (Roll Calls 234, 235, 236). The RS/EH
+second-fetch digest matches were reported by the operator, not independently
+recomputed in this runtime; RH has one reported fetch only. No original PDF
+was imported from the operator's `/tmp/hr3633-capture/` directory.
+
+**Scope:** Only Roll Call 234 concerns H.R. 3633. Roll Calls 235 and 236
+concern S. 4668, a different bill. Their GET-403 outcomes are retained as
+out-of-scope access observations, never in the H.R. 3633 evidence denominator.
+
+```sh
+node apps/knowledge-by-jaywisdom/verify-external-captures.mjs
+# No-network plan, lists the three expected source filenames.
+node apps/knowledge-by-jaywisdom/verify-external-captures.mjs --dir /path/to/PDFs
+# Local readback of the three GovInfo PDF files with names shown in the plan.
+```
+
+The local readback checks actual byte length, SHA-256 and `%PDF-` header
+against the operator-reported values. A match verifies local byte agreement
+with that receipt, **not** that the PDF is a genuine GovInfo record or that
+the independent second fetch took place in the current runtime. Absent files
+produce UNKNOWN, conflicts produce FAIL, and production remains HOLD.
