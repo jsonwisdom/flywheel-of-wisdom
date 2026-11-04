@@ -59,3 +59,49 @@ test("three raw captures and receipts replay against independently recalculated 
     }
   } finally {await rm(dir,{recursive:true,force:true});}
 });
+
+test("Senate source allowlist includes RS bill text and official Roll Call 234",()=>{
+  assert.equal(validateSource({
+    id:"senate_reported_text",
+    url:"https://www.govinfo.gov/content/pkg/BILLS-119hr3633rs/html/BILLS-119hr3633rs.htm",
+    expected_content_sha256:null
+  }).hostname,"www.govinfo.gov");
+  assert.equal(validateSource({
+    id:"senate_cloture_vote",
+    url:"https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00234.htm",
+    expected_content_sha256:null
+  }).hostname,"www.senate.gov");
+});
+test("HTTP 200 challenge body is UNKNOWN, never a primary source",async()=>{
+  const challenge=new Response("<html><title>Just a moment...</title>cf-chl-403</html>",{
+    status:200,headers:{"content-type":"text/html"}
+  });
+  const out=await captureSource(sourceMap.slots[0],async()=>challenge);
+  assert.equal(out.status,"UNKNOWN");
+  assert.equal(out.reason,"CHALLENGE_BODY_NOT_OFFICIAL_RECORD");
+  assert.equal(out.data,null);
+});
+test("five distinct official record capture fixtures keep core denominator at three",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"jw-senate-fixture-"));
+  try {
+    const withSenate={...sourceMap,related_sources:[
+      {id:"senate_reported_text",
+       url:"https://www.govinfo.gov/content/pkg/BILLS-119hr3633rs/html/BILLS-119hr3633rs.htm",
+       expected_content_sha256:null,record_id:"BILLS-119hr3633rs"},
+      {id:"senate_cloture_vote",
+       url:"https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00234.htm",
+       expected_content_sha256:null,record_id:"119-2-senate-roll234"}
+    ]};
+    const receipt=await captureMap(withSenate,fakeFetch,dir,{includeRelated:true});
+    assert.equal(receipt.core_slot_count,3);
+    assert.equal(receipt.supplementary_source_count,2);
+    assert.equal(receipt.original_count,5);
+    assert.equal(receipt.independent_replay_count,0);
+    assert.equal(receipt.publication,"HOLD");
+    for (const item of receipt.results) {
+      assert.equal(h(await readFile(join(dir,item.slot_id+".raw"))),item.sha256);
+      assert.equal(item.http_status,200);
+      assert.equal(item.final_url,item.url);
+    }
+  } finally {await rm(dir,{recursive:true,force:true});}
+});
