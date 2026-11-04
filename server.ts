@@ -9,7 +9,7 @@ import "dotenv/config";
 import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
 import { paymentMiddlewareFromHTTPServer } from "@x402/express";
-import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge";
+import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
