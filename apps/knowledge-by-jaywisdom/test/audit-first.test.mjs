@@ -69,4 +69,28 @@ test("REPLAY: emitted candidate digests verify exact saved bytes", () => fixture
   const { createHash }=await import("node:crypto");
   assert.equal(manifest.candidate_sha256,createHash("sha256").update(content).digest("hex"));
   assert.equal(manifest.historical_digest_recovered,false);
+  assert.equal(manifest.candidate_file_receipts.length,2);
+  for (const record of manifest.candidate_file_receipts) {
+    const candidateFile=await readFile(join(outputDir,record.path));
+    assert.equal(record.candidate_sha256,createHash("sha256").update(candidateFile).digest("hex"));
+    const candidate=JSON.parse(candidateFile.toString());
+    assert.equal(candidate.reconstructed_not_recovered,true);
+    assert.equal(candidate.original_bytes,null);
+    assert.equal(candidate.source_recovered,false);
+    assert.equal(candidate.authority_created,false);
+  }
+}));
+
+test("RECONSTRUCT: synthetic source blueprints never fabricate votes or historical bytes", () => fixture(async root => {
+  const path=join(root,"expectation.json");
+  await writeFile(path,JSON.stringify(contract));
+  const outputDir=join(root,"derived-output");
+  await runAudit({contractPath:path,repoRoot:root,outputDir});
+  const primary=JSON.parse(await readFile(join(outputDir,"candidates/source.candidate.json"),"utf8"));
+  assert.equal(primary.status,"SOURCE_LOOKUP_REQUIRED");
+  assert.equal(primary.blueprint.source_payload,null);
+  assert.equal(primary.historical_digest,null);
+  const derived=JSON.parse(await readFile(join(outputDir,"candidates/derived.candidate.json"),"utf8"));
+  assert.equal(derived.status,"DRAFT_UNVERIFIED");
+  assert.equal(derived.production,"HOLD");
 }));
