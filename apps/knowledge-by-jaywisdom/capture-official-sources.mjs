@@ -9,9 +9,9 @@ import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const sha256=buf=>createHash("sha256").update(buf).digest("hex");
-const OFFICIAL_HOSTS=new Set(["www.govinfo.gov","clerk.house.gov"]);
+const OFFICIAL_HOSTS=new Set(["www.govinfo.gov","clerk.house.gov","www.senate.gov"]);
 export function validateSource(slot) {
-  if (!/^(congress_bill|congressional_actions|house_vote)$/.test(slot?.id ?? ""))
+  if (!/^(congress_bill|congressional_actions|house_vote|senate_reported_text|senate_cloture_vote)$/.test(slot?.id ?? ""))
     throw Error("UNEXPECTED_SOURCE_ID");
   const u=new URL(slot.url);
   if (u.protocol!=="https:" || !OFFICIAL_HOSTS.has(u.hostname) ||
@@ -33,6 +33,11 @@ export async function captureSource(slot, fetchImpl=fetch) {
   if (!response.ok || !response.body)
     return {status:"UNKNOWN",reason:"OFFICIAL_SOURCE_HTTP_UNAVAILABLE",http_status:response.status,data:null};
   const type=response.headers?.get?.("content-type")??"unknown";
+  // No automatic redirect following: response URL must stay on an approved
+  // official origin. Prevent a challenge/redirect from being mislabeled source.
+  const finalUrl=response.url || slot.url;
+  try { validateSource({...slot,url:finalUrl}); }
+  catch { return {status:"UNKNOWN",reason:"REDIRECTED_OR_UNTRUSTED_RESPONSE_URL",data:null}; }
   const maxBytes=12*1024*1024;
   const chunks=[];let length=0;
   try {
@@ -47,21 +52,33 @@ export async function captureSource(slot, fetchImpl=fetch) {
   }
   const data=Buffer.concat(chunks);
   if (!data.byteLength) return {status:"UNKNOWN",reason:"EMPTY_HTTP_BODY",data:null};
+  // HTTP 200 is not enough: Cloudflare/bot challenges return HTML too.
+  const beginning=data.subarray(0,4096).toString("utf8").toLowerCase();
+  if (/(just a moment|cf-chl-|checking your browser|enable javascript and cookies|attention required!|captcha challenge)/i.test(beginning))
+    return {status:"UNKNOWN",reason:"CHALLENGE_BODY_NOT_OFFICIAL_RECORD",data:null};
   const digest=sha256(data);
   if (slot.expected_content_sha256 && slot.expected_content_sha256.toLowerCase()!==digest)
     return {status:"FAIL",reason:"SOURCE_HASH_MISMATCH",observed_sha256:digest,data:null};
   return {
     status:"CAPTURED_UNREPLAYED",reason:"ORIGINAL_RAW_BYTES_CAPTURED_NOT_INDEPENDENTLY_REPLAYED",
-    data,sha256:digest,byte_length:data.byteLength,content_type:type
+    data,sha256:digest,byte_length:data.byteLength,content_type:type,
+    http_status:response.status,final_url:finalUrl
   };
 }
-export async function captureMap(sourceMap, fetchImpl=fetch, outputDir) {
+export async function captureMap(sourceMap, fetchImpl=fetch, outputDir, {includeRelated=false}={}) {
   if (!sourceMap || sourceMap.schema_version!=="jaywisdom_official_source_map.v1" ||
       sourceMap.slots?.length!==3 || new Set(sourceMap.slots.map(s=>s.id)).size!==3)
     throw Error("INVALID_OFFICIAL_SOURCE_MAP");
+  if (includeRelated &&
+      (sourceMap.related_sources?.length!==2 ||
+       new Set(sourceMap.related_sources.map(s=>s.id)).size!==2 ||
+       !sourceMap.related_sources.every(s=>["senate_reported_text","senate_cloture_vote"].includes(s.id))))
+    throw Error("INVALID_SENATE_SOURCE_SET");
+  const sources=includeRelated
+    ? [...sourceMap.slots,...sourceMap.related_sources] : sourceMap.slots;
   const results=[];
   await mkdir(outputDir,{recursive:true});
-  for (const slot of sourceMap.slots) {
+  for (const slot of sources) {
     const capture=await captureSource(slot,fetchImpl);
     const {data,...metadata}=capture;
     const safeName=slot.id; // closed allowlist
@@ -72,6 +89,8 @@ export async function captureMap(sourceMap, fetchImpl=fetch, outputDir) {
   }
   const receipt={schema_version:"jaywisdom_official_capture.v1",results,
     original_count:results.filter(r=>r.status==="CAPTURED_UNREPLAYED").length,
+    core_slot_count:sourceMap.slots.length,
+    supplementary_source_count:includeRelated ? sourceMap.related_sources.length : 0,
     independent_replay_count:0,publication:"HOLD",authority_created:false};
   await writeFile(join(outputDir,"capture-receipts.json"),JSON.stringify(receipt,null,2)+"\n");
   return receipt;
@@ -80,14 +99,16 @@ const invoked=process.argv[1] && resolve(process.argv[1])===fileURLToPath(import
 if(invoked) {
   const dir=dirname(fileURLToPath(import.meta.url));
   const sourceMap=JSON.parse(await readFile(join(dir,"expectations/hr3633-official-source-map.v1.json"),"utf8"));
-  if (process.argv[2]!=="--capture") {
-    console.log(JSON.stringify({mode:"PLAN_ONLY",slot_urls:sourceMap.slots.map(s=>({id:s.id,url:s.url})),
+  if (!["--capture","--capture-all"].includes(process.argv[2])) {
+    console.log(JSON.stringify({mode:"PLAN_ONLY",slot_urls:[...sourceMap.slots,...(sourceMap.related_sources??[])].map(s=>({id:s.id,url:s.url})),
       network_requests:0,production:"HOLD"},null,2));
   } else {
+    const includeRelated=process.argv.includes("--capture-all");
     const receipt=await captureMap(sourceMap,fetch,
-      join(dir,".audit-artifacts/official-inputs"));
-    console.log(JSON.stringify({captured:receipt.original_count,expected:3,
+      join(dir,".audit-artifacts/official-inputs"),{includeRelated});
+    const expected=receipt.core_slot_count+receipt.supplementary_source_count;
+    console.log(JSON.stringify({captured:receipt.original_count,expected,
       independent_replay:receipt.independent_replay_count,publication:"HOLD"}));
-    if(receipt.original_count!==3)process.exitCode=2;
+    if(receipt.original_count!==expected)process.exitCode=2;
   }
 }
