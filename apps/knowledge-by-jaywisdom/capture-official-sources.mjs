@@ -88,7 +88,8 @@ export async function captureMap(sourceMap, fetchImpl=fetch, outputDir, {include
       authority_created:false,production:"HOLD"});
   }
   const receipt={schema_version:"jaywisdom_official_capture.v1",results,
-    captured_body_count:results.filter(r=>r.status==="CAPTURED_UNREPLAYED").length,\n    source_identity_verified_count:0,
+    captured_body_count:results.filter(r=>r.status==="CAPTURED_UNREPLAYED").length,
+    source_identity_verified_count:0,
     core_slot_count:sourceMap.slots.length,
     supplementary_source_count:includeRelated ? sourceMap.related_sources.length : 0,
     independent_replay_count:0,publication:"HOLD",authority_created:false};
