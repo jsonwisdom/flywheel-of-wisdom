@@ -1,0 +1,105 @@
+{
+  "schema_version": "jaywisdom_external_capture_observation.v1",
+  "project": "Crypto Congress — H.R. 3633",
+  "observed_on_date": "2026-11-04",
+  "entry_type": "OPERATOR_REPORTED_CAPTURES_NOT_VERIFIED_IN_THIS_RUNTIME",
+  "source": "Operator-provided capture log in conversation; PDFs are not attached or mounted",
+  "authority_created": false,
+  "production": "HOLD",
+  "captured_source_records": [
+    {
+      "record_id": "BILLS-119hr3633rs",
+      "relation": "SENATE_REPORTED_TEXT",
+      "url": "https://www.govinfo.gov/content/pkg/BILLS-119hr3633rs/pdf/BILLS-119hr3633rs.pdf",
+      "filename_hint": "BILLS-119hr3633rs.pdf",
+      "http_get_status_reported": 200,
+      "bytes_reported": 1802373,
+      "sha256_reported": "519e62c8e962816c176b1f771b3d9da20c790f506bca4a9b4c78e15023b4a8b5",
+      "second_fetch_digest_match_reported": true,
+      "independently_recalculated_in_this_runtime": false,
+      "raw_bytes_available_in_this_runtime": false,
+      "classification": "REPORTED_TWO_FETCH_MATCH_UNVERIFIED_HERE",
+      "maps_to": "senate_reported_text"
+    },
+    {
+      "record_id": "BILLS-119hr3633eh",
+      "relation": "HOUSE_ENGROSSED_TEXT",
+      "url": "https://www.govinfo.gov/content/pkg/BILLS-119hr3633eh/pdf/BILLS-119hr3633eh.pdf",
+      "filename_hint": "BILLS-119hr3633eh.pdf",
+      "http_get_status_reported": 200,
+      "bytes_reported": 492691,
+      "sha256_reported": "f1372434145905e662438e50336c3b29af0d54b9f6bf017d62cad140b982601d",
+      "second_fetch_digest_match_reported": true,
+      "independently_recalculated_in_this_runtime": false,
+      "raw_bytes_available_in_this_runtime": false,
+      "classification": "REPORTED_TWO_FETCH_MATCH_UNVERIFIED_HERE",
+      "maps_to": "congress_bill"
+    },
+    {
+      "record_id": "BILLS-119hr3633rh",
+      "relation": "HOUSE_REPORTED_TEXT",
+      "url": "https://www.govinfo.gov/content/pkg/BILLS-119hr3633rh/pdf/BILLS-119hr3633rh.pdf",
+      "filename_hint": "BILLS-119hr3633rh.pdf",
+      "http_get_status_reported": 200,
+      "bytes_reported": 1053369,
+      "sha256_reported": "1741d5eef7594e69bcb3101f70eac0450d22bf0bec4114f27aeb5c5ac713cb0d",
+      "second_fetch_digest_match_reported": false,
+      "independently_recalculated_in_this_runtime": false,
+      "raw_bytes_available_in_this_runtime": false,
+      "classification": "REPORTED_SINGLE_CAPTURE_UNVERIFIED_HERE",
+      "maps_to": "supplementary_house_version"
+    }
+  ],
+  "unretrieved_vote_records": [
+    {
+      "record_id": "119-2-senate-roll234",
+      "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00234.htm",
+      "xml_url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00234.xml",
+      "vote_date": "2026-09-15",
+      "measure": "H.R. 3633",
+      "relation": "IN_SCOPE",
+      "head_http_status_reported": 200,
+      "get_http_status_reported": 403,
+      "raw_bytes_captured": false,
+      "content_sha256": null,
+      "verdict": "UNKNOWN",
+      "reason": "ACCESS_BLOCKED_NOT_RECORD_ABSENT"
+    },
+    {
+      "record_id": "119-2-senate-roll235",
+      "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00235.htm",
+      "xml_url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00235.xml",
+      "vote_date": "2026-09-15",
+      "measure": "S. 4668",
+      "relation": "OUT_OF_SCOPE_HR3633",
+      "head_http_status_reported": 200,
+      "get_http_status_reported": 403,
+      "raw_bytes_captured": false,
+      "content_sha256": null,
+      "verdict": "UNKNOWN",
+      "reason": "ACCESS_BLOCKED_NOT_RECORD_ABSENT"
+    },
+    {
+      "record_id": "119-2-senate-roll236",
+      "url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00236.htm",
+      "xml_url": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00236.xml",
+      "vote_date": "2026-09-17",
+      "measure": "S. 4668",
+      "relation": "OUT_OF_SCOPE_HR3633",
+      "head_http_status_reported": 200,
+      "get_http_status_reported": 403,
+      "raw_bytes_captured": false,
+      "content_sha256": null,
+      "verdict": "UNKNOWN",
+      "reason": "ACCESS_BLOCKED_NOT_RECORD_ABSENT"
+    }
+  ],
+  "independently_verified_source_count_in_this_runtime": 0,
+  "release_gate": "HOLD",
+  "notes": [
+    "Verified source URLs do not verify body bytes; no raw PDF or vote-record bytes mounted here.",
+    "The two Senate S.4668 votes must not count toward H.R.3633's required evidence denominator.",
+    "The House reported RH PDF had only one reported successful fetch.",
+    "This is an observation log, not an independently verified SHA-256 manifest or proof of legislative claim truth."
+  ]
+}
