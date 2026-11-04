@@ -22,6 +22,9 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install production x402 v2 dependencies (no funds)
+        run: npm install --ignore-scripts --no-audit --no-fund
+
       - name: Test x402 v2 challenge parser (no payment)
         run: node --test scripts/x402-challenge-audit.test.mjs
 
