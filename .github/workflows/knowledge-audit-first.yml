@@ -1,0 +1,31 @@
+name: Knowledge by JayWisdom — CI Audit First (no funds)
+on:
+  push:
+    paths:
+      - "apps/knowledge-by-jaywisdom/**"
+      - ".github/workflows/knowledge-audit-first.yml"
+  pull_request:
+    paths:
+      - "apps/knowledge-by-jaywisdom/**"
+      - ".github/workflows/knowledge-audit-first.yml"
+permissions:
+  contents: read
+jobs:
+  expectation-reconstruction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test expectation engine before running any paid route
+        working-directory: apps/knowledge-by-jaywisdom
+        run: node --test test/*.test.mjs
+      - name: EXPECT / AUDIT / RECONSTRUCT (no network, funds, or secrets)
+        run: node apps/knowledge-by-jaywisdom/audit-first.mjs
+      - name: Upload candidate design and audit receipts (not original evidence)
+        uses: actions/upload-artifact@v4
+        with:
+          name: jaywisdom-ci-audit-first-candidate
+          path: apps/knowledge-by-jaywisdom/.audit-artifacts/
+          retention-days: 30
