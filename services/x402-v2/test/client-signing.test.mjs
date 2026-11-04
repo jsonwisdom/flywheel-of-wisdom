@@ -142,6 +142,7 @@ test("G1 REAL v2 signer -> PAYMENT-SIGNATURE -> real Express middleware -> mock 
     assert.ok(receipt,"NO_POST_SETTLEMENT_RECEIPT_ROW");
     assert.equal(receipt.payer,ACCOUNT.address.toLowerCase());
     assert.equal(receipt.content_sha256,delivered.content_sha256);
+    console.log("PASS: VALID");
     console.log("G1_CLIENT_SIGNING_EVIDENCE "+JSON.stringify({
       sdk:"@x402/fetch @x402/core @x402/evm v2.29.0",
       mode:"TEST_ONLY_LOCALHOST_MOCK_FACILITATOR_NO_FUNDS",
@@ -177,6 +178,25 @@ test("G1 five-field guard stops malicious 402 before signing or retry",async()=>
       const observed=[];
       await assert.rejects(()=>safeClient(observed)(host.url),/WRONG_(NETWORK|SCHEME|ASSET|PAY_TO|AMOUNT)/,field);
       assert.equal(paidRequests,0,"UNEXPECTED_SIGNED_RETRY_"+field);
+      if(field==="scheme") console.log("PASS: WRONG_SCHEME");
     }finally{await host.close()}
   }
+});
+
+test("G2 x402Version mismatch is rejected before any EIP-712 signature or paid retry",async()=>{
+  const challenge={x402Version:1,accepts:[{scheme:"exact",network:SEP.network,
+    asset:SEP.usdc,payTo:PAY_TO,amount:"1000000",maxTimeoutSeconds:60}]};
+  let signedRequests=0;
+  const app=express();
+  app.get("/knowledge",(req,res)=>{
+    if(req.headers["payment-signature"])signedRequests++;
+    res.setHeader("PAYMENT-REQUIRED",Buffer.from(JSON.stringify(challenge)).toString("base64"));
+    res.status(402).json(challenge);
+  });
+  const host=await listening(app);
+  try{
+    await assert.rejects(()=>safeClient([])(host.url),/BAD_X402_VERSION/);
+    assert.equal(signedRequests,0,"WRONG_VERSION_MUST_NOT_TRIGGER_SIGNED_RETRY");
+    console.log("PASS: WRONG_VERSION");
+  }finally{await host.close()}
 });

@@ -41,9 +41,11 @@ jobs:
         working-directory: services/x402-v2
         run: npm run check
 
-      - name: Test transaction-bound receipts and crash safety (MOCK ONLY)
+      - name: Test transaction-bound receipts and x402 version/scheme regression (MOCK ONLY)
         working-directory: services/x402-v2
-        run: npm test
+        run: |
+          npm test
+          echo "REGRESSION EXIT: 0"
 
       - name: Install dependencies
         run: pip install jsonschema
