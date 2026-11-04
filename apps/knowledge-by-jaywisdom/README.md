@@ -102,3 +102,46 @@ The three other required slots (`claim_set`, `receipt_manifest`,
 `independent_replay`) are **derived records**, not original government files.
 Neither a page locator nor a draft claim ledger is evidence of historical
 source bytes. Both revenue paths remain HOLD.
+
+## Senate 2026 source correction and second-fetch gate
+
+The `congressional_actions` source locator now points to the Senate's
+September 15, 2026 floor-activity record. The old GovInfo `RFS` document is
+retained only as a September 2025 historical reference; it is not the June
+2026 reported text or the September 2026 cloture vote.
+
+Two additional Senate evidence objects are tracked separately in
+`expectations/hr3633-official-source-map.v1.json`:
+- `senate_reported_text` — GovInfo `BILLS-119hr3633rs`, June 1, 2026
+  (Senate-reported amendment, Calendar 423; not the enrolled law).
+- `senate_cloture_vote` — Senate Roll Call 234, September 15, 2026
+  (49 yea, 50 nay, 1 not voting; cloture on motion to proceed rejected).
+
+**These are two supplementary pilot records, not a silent expansion of the
+fixed eight-slot original expectation contract.** Original source bytes
+still require separate capture and verification. No presidential record slot
+is declared because no presidential action is established.
+
+From the repository root:
+
+```sh
+node apps/knowledge-by-jaywisdom/capture-official-sources.mjs
+# Plan only: no requests.
+node apps/knowledge-by-jaywisdom/capture-official-sources.mjs --capture
+# Explicit network capture of three core official source bodies.
+node apps/knowledge-by-jaywisdom/capture-official-sources.mjs --capture-all
+# Explicit network capture of 3 core + 2 Senate supplementary bodies.
+node apps/knowledge-by-jaywisdom/verify-official-sources.mjs --replay-all
+# Explicit second HTTP fetch with raw-byte SHA-256 comparisons.
+```
+
+The second fetch runs as a separate process and reports `MATCH`, `UNKNOWN`
+or `FAIL` (for corrupted local receipts). It is NOT proof of independent
+human verification, statutory meaning, or legislative truth. GovInfo and Senate
+HTML can change across retrievals; byte differences alone do not establish
+tampering. A challenge or HTTP denial leaves evidence UNKNOWN.
+
+The local capture receipt stores requested and final URL, HTTP status,
+timestamp, content-type, byte count, and SHA-256 whenever successful.
+No automated network requests occur in CI, and no production, Stripe,
+settlement, or publication gates are modified.
