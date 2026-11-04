@@ -77,3 +77,28 @@ A Stripe event does not prove wallet ownership or Base settlement.
 **Non-claims:** no recovered missing historical SHA-256 bytes, no original four digests recovered;
 no new transaction, no wallet or signer binding, no external independent fact verification,
 no real congressional report sold, and no permission to treat a hash witness as a tribunal.
+
+## CI forward gate: original-source capture (H.R.3633 pilot)
+
+Three required *source* slots are now bound to independently locatable federal records:
+`congress_bill` → GovInfo House engrossed H.R.3633; `congressional_actions`
+→ GovInfo Senate-referred document **(not a complete actions log)**; `house_vote`
+→ Clerk House Roll Call 199 (294–134, July 17, 2025).
+See `expectations/hr3633-official-source-map.v1.json`. Other bills in the
+Crypto Congress project remain separately scoped; this is the first pilot only.
+
+`node apps/knowledge-by-jaywisdom/capture-official-sources.mjs`
+shows a no-network capture plan. To actually fetch publicly available official
+source bytes, an operator deliberately invokes
+`node apps/knowledge-by-jaywisdom/capture-official-sources.mjs --capture`.
+This fetch is not executed in CI, requires working network access, and never
+uses wallets or Stripe. Exact response bodies are saved to untracked
+`.audit-artifacts/official-inputs/*.raw`; capture receipts report bytes and
+SHA-256. HTTP/network failure is UNKNOWN, digest conflict is FAIL, capture success
+is CAPTURED_UNREPLAYED. A second verifier must separately fetch/replay before
+`independent_replay` can PASS.
+
+The three other required slots (`claim_set`, `receipt_manifest`,
+`independent_replay`) are **derived records**, not original government files.
+Neither a page locator nor a draft claim ledger is evidence of historical
+source bytes. Both revenue paths remain HOLD.
