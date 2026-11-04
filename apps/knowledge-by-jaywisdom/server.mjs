@@ -7,6 +7,7 @@ import Stripe from "stripe";
 import { createHash, randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { getProduct, isReleaseReady, catalogPreview } from "./catalog.mjs";
 import { assessEvent } from "./payment-verdict.mjs";
 
@@ -46,9 +47,8 @@ app.post("/v1/stripe/webhook", express.raw({ type: "application/json", limit: "1
   };
   try {
     await mkdir(EVENT_DIR, { recursive: true, mode: 0o700 });
-    const dest = new URL("./", "file://" + EVENT_DIR.replace(/\\/g, "/") + "/");
-    // Hashed name avoids path injection from event IDs.
-    const filepath = fileURLToPath(new URL(hash(event.id) + ".json", dest));
+    // Hashed name avoids path injection from event IDs; join is OS portable.
+    const filepath = join(EVENT_DIR, hash(event.id) + ".json");
     try {
       await writeFile(filepath, JSON.stringify(record, null, 2) + "\n", { flag: "wx", mode: 0o600 });
     } catch (err) {
