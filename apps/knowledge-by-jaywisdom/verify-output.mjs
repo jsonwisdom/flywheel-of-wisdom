@@ -15,6 +15,21 @@ demand(audit.production==="HOLD"&&candidate.production==="HOLD"&&receipt.product
 demand(candidate.historical_original_restored===false&&receipt.original_source_recovered===false,"FALSE_HISTORICAL_RECOVERY");
 demand(candidate.authority_created===false&&receipt.authority_created===false,"AUTHORITY_VIOLATION");
 demand(Array.isArray(audit.observations)&&audit.counts.expected===audit.observations.length,"EXPECTED_SLOTS_UNACCOUNTED");
+demand(Array.isArray(receipt.candidate_file_receipts),"CANDIDATE_RECEIPTS_MISSING");
+demand(receipt.candidate_file_receipts.length===audit.counts.expected,"CANDIDATE_COVERAGE_MISMATCH");
+const expectedIds = new Set(audit.observations.map(x=>x.id));
+for (const item of receipt.candidate_file_receipts) {
+  demand(expectedIds.delete(item.id),"DUPLICATE_OR_UNKNOWN_CANDIDATE");
+  demand(item.path==="candidates/"+item.id+".candidate.json","INVALID_CANDIDATE_PATH");
+  const content = await readFile(join(dir, item.path));
+  demand(sha(content)===item.candidate_sha256,"SLOT_CANDIDATE_HASH_MISMATCH");
+  const candidate = JSON.parse(content.toString("utf8"));
+  demand(candidate.slot_id===item.id && candidate.reconstructed_not_recovered===true,"CANDIDATE_IDENTITY_ERROR");
+  demand(candidate.original_bytes===null && candidate.historical_digest===null,"CANDIDATE_FALSE_ORIGINAL");
+  demand(candidate.source_recovered===false && candidate.authority_created===false &&
+    candidate.production==="HOLD","CANDIDATE_AUTHORITY_VIOLATION");
+}
+demand(expectedIds.size===0,"EXPECTED_CANDIDATE_NOT_RECONSTRUCTED");
 console.log(JSON.stringify({replay:"PASS",expected:audit.counts.expected,
   missing:audit.counts.missing,evidence:audit.evidence_verdict,production:"HOLD",
-  source_originals_reconstructed:false}));
+  candidate_blueprints:receipt.candidate_file_receipts.length,source_originals_reconstructed:false}));
