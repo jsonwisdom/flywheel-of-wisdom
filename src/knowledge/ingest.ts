@@ -1,6 +1,6 @@
-import { field, runNullEngine, type EngineOutput } from "./null-engine";
-import type { KnowledgeObject, ObjectType, PaymentClass } from "./knowledge-object";
-import { sha256Hex } from "./knowledge-manifest";
+import { field, runNullEngine, type EngineOutput } from "./null-engine.js";
+import type { KnowledgeObject, ObjectType, PaymentClass } from "./knowledge-object.js";
+import { sha256Hex } from "./knowledge-manifest.js";
 
 export interface IngestInput {
   id: string;
