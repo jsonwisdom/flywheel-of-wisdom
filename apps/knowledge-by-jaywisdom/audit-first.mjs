@@ -138,10 +138,43 @@ export async function runAudit({ contractPath, repoRoot, outputDir }) {
   const c = Buffer.from(JSON.stringify(candidate, null, 2) + "\n");
   await writeFile(join(outputDir, "audit.json"), a);
   await writeFile(join(outputDir, "reconstruction-candidate.json"), c);
+
+  // Each expected slot becomes a deterministic design CANDIDATE; never an original.
+  // Derived candidates provide useful rebuilding scaffolds, not fabricated claims.
+  const candidateDir = join(outputDir, "candidates");
+  await mkdir(candidateDir, { recursive: true });
+  const candidate_file_receipts = [];
+  for (const source of candidate.sources) {
+    const fileName = source.id + ".candidate.json"; // validated identifier
+    const isPrimary = source.role === "PRIMARY_SOURCE";
+    const blueprint = source.id === "claim_set"
+      ? { claims: [], required_fields: candidate.claim_ledger_template.required_fields_per_claim,
+          verdict: "UNKNOWN", truth_status: "UNDETERMINED" }
+      : source.id === "receipt_manifest"
+      ? { entries: [], raw_byte_hashes: [], merkle_root: null, verdict: "UNKNOWN" }
+      : source.role === "VERIFIER_RECEIPT"
+      ? { verifier: null, replay_executed: false, independent: false, verdict: "UNKNOWN" }
+      : { required_source_origin: source.source_origin,
+          expected_schema_path: source.expected_path, source_payload: null, verdict: "UNKNOWN" };
+    const reconstructed = {
+      schema_version: "jaywisdom_slot_candidate.v1", slot_id: source.id,
+      original_expected_path: source.expected_path, role: source.role,
+      original_bytes: null, historical_digest: null, source_recovered: false,
+      reconstructed_not_recovered: true, status: isPrimary ? "SOURCE_LOOKUP_REQUIRED" : "DRAFT_UNVERIFIED",
+      blueprint, authority_created: false, production: "HOLD"
+    };
+    const bytes = Buffer.from(JSON.stringify(reconstructed, null, 2) + "\n");
+    await writeFile(join(candidateDir, fileName), bytes);
+    candidate_file_receipts.push({
+      id: source.id, path: "candidates/" + fileName,
+      candidate_sha256: sha256(bytes), original_source_recovered: false
+    });
+  }
   const manifest = {
     schema_version: "jaywisdom_reconstruction_receipt.v1",
     source_contract_sha256: sha256(await readFile(contractPath)),
     audit_sha256: sha256(a), candidate_sha256: sha256(c),
+    candidate_file_receipts,
     historical_digest_recovered: false,
     original_source_recovered: false, authority_created: false, production: "HOLD"
   };
