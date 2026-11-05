@@ -1,0 +1,27 @@
+{
+  "schema_version": "cwaas.synthetic_terms.v1",
+  "mode": "SYNTHETIC_ONLY",
+  "product_id": "fixture-audit-89",
+  "product_version": "v0.0.1",
+  "description": "TEST FIXTURE ONLY — no actual offer",
+  "price": {
+    "asset": "USDC",
+    "amount_atomic": 89000000,
+    "network": "eip155:8453"
+  },
+  "approved_recipient": "0x1111111111111111111111111111111111111111",
+  "delivery": {
+    "artifact_or_service": "Synthetic UTF-8 test report",
+    "acceptance_criteria": [
+      {
+        "criterion_id": "fixture-body-present",
+        "description": "Test report contains the agreed synthetic fixture marker."
+      }
+    ],
+    "delivery_method": "Local test harness only",
+    "deadline": null
+  },
+  "refund_and_failure_terms": "Synthetic fixture only; no payments or commercial promise.",
+  "terms_approval_evidence": "SYNTHETIC_FIXTURE_NOT_HUMAN_APPROVAL",
+  "activation_authorization": "DISABLED"
+}

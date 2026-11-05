@@ -1,0 +1,63 @@
+{
+  "schema": "cwaas.synthetic_terms_validation_receipt.v1",
+  "observed_at": "2026-11-05T17:25:12.816697+00:00",
+  "mode": "SYNTHETIC_ONLY",
+  "verdict": "PASS",
+  "tests_passed": 51,
+  "candidate_fixtures": 41,
+  "cli_checks": [
+    {
+      "fixture": "pass-fixture-audit-89",
+      "exit_code": 0,
+      "result": {
+        "verdict": "PASS",
+        "scope": "SYNTHETIC_CONTRACT_ONLY",
+        "terms_sha256": "0f2a184c3b4982d5332e082eb22e8410289fb6bd17ead4495a6a5c1d6402b2d9",
+        "activation_authorization": "DISABLED"
+      }
+    },
+    {
+      "fixture": "wrong-amount",
+      "exit_code": 1,
+      "result": {
+        "verdict": "FAIL",
+        "error": "PRICE_OR_NETWORK_CONTRACT_MISMATCH",
+        "activation_authorization": "DISABLED"
+      }
+    },
+    {
+      "fixture": "wrong-recipient",
+      "exit_code": 1,
+      "result": {
+        "verdict": "FAIL",
+        "error": "RECIPIENT_CONTRACT_MISMATCH",
+        "activation_authorization": "DISABLED"
+      }
+    },
+    {
+      "fixture": "unpinned-version",
+      "exit_code": 1,
+      "result": {
+        "verdict": "FAIL",
+        "error": "1 validation error for Terms",
+        "activation_authorization": "DISABLED"
+      }
+    },
+    {
+      "fixture": "99-network-unset",
+      "exit_code": 1,
+      "result": {
+        "verdict": "FAIL",
+        "error": "1 validation error for Terms",
+        "activation_authorization": "DISABLED"
+      }
+    }
+  ],
+  "runtime": {
+    "python": "3.12.14",
+    "pydantic": "2.14.1"
+  },
+  "authorization": "DISABLED",
+  "scope": "Local strict terms and catalog validation; hash-pinned synthetic order records. No settlement or delivery verification.",
+  "external_mutations": 0
+}

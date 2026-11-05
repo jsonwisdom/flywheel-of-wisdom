@@ -1,0 +1,8 @@
+{
+  "schema_version": "cwaas.synthetic_order_pin.v1",
+  "mode": "SYNTHETIC_ONLY",
+  "order_id": "fixture-order-1",
+  "product_id": "fixture-audit-89",
+  "product_version": "v0.0.1",
+  "terms_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+}

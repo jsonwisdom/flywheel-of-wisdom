@@ -1,0 +1,46 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "cwaas.synthetic_order_pin.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "mode": {
+      "const": "SYNTHETIC_ONLY",
+      "title": "Mode",
+      "type": "string"
+    },
+    "order_id": {
+      "pattern": "^[a-z][a-z0-9-]{0,79}$",
+      "title": "Order Id",
+      "type": "string"
+    },
+    "product_id": {
+      "pattern": "^[a-z][a-z0-9-]{0,79}$",
+      "title": "Product Id",
+      "type": "string"
+    },
+    "product_version": {
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "title": "Product Version",
+      "type": "string"
+    },
+    "terms_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Terms Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "mode",
+    "order_id",
+    "product_id",
+    "product_version",
+    "terms_sha256"
+  ],
+  "title": "OrderPin",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
