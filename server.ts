@@ -10,6 +10,7 @@ import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
 import { paymentMiddlewareFromHTTPServer } from "@x402/express";
 import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge.js";
+import { readBaseEnsIdentity } from "./src/identity/ens-resolution.js";
 
 const PAY_TO = (process.env.X402_PAY_TO ??
   "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
@@ -41,6 +42,15 @@ const server = await createX402Server({
       mimeType: "application/json",
     },
   },
+});
+
+// Read-only ENS corridor observation. This is not an auth, ownership, or payment gate.
+// Register before x402 middleware; no paid route or payTo value is changed.
+app.get("/identity/ens", async (_req, res) => {
+  const evidence = await readBaseEnsIdentity(process.env.ENS_ETHEREUM_RPC_URL, PAY_TO);
+  res.set("Cache-Control", "no-store");
+  const httpStatus = evidence.status === "PASS" ? 200 : evidence.status === "FAIL" ? 409 : 503;
+  res.status(httpStatus).json(evidence);
 });
 
 app.use(paymentMiddlewareFromHTTPServer(server));
