@@ -9,7 +9,8 @@
     "dev": "tsx watch server.ts",
     "test:402": "powershell -ExecutionPolicy Bypass -File ./scripts/test-402.ps1",
     "check:imports": "node --input-type=module -e \"await Promise.all([import('@coinbase/cdp-sdk/x402'),import('@x402/express'),import('dotenv/config')]);console.log('PASS: MAINNET_IMPORTS')\"",
-    "check:esm": "node scripts/check-esm-graph.mjs"
+    "check:esm": "node scripts/check-esm-graph.mjs",
+    "test:ens": "node --experimental-strip-types --test tests/ens-evidence.test.mjs"
   },
   "engines": {
     "node": "22.x"
@@ -21,7 +22,8 @@
     "@x402/express": "2.29.0",
     "express": "^4.21.0",
     "dotenv": "^16.6.1",
-    "@x402/svm": "2.29.0"
+    "@x402/svm": "2.29.0",
+    "viem": "^2.57.10"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
