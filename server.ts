@@ -21,6 +21,12 @@ if (!PAY_TO.startsWith("0x") || PAY_TO.length !== 42) {
 const app = express();
 app.use(express.json());
 
+// Separate, funds-disabled test namespace. Never mount in production.
+if (process.env.NODE_ENV === "test" && process.env.EVIDENCE_BUNDLE_TEST_MODE === "1") {
+  const { makeEvidenceBundleTestRouter } = await import("./src/evidence-bundles/test-order-router.mjs");
+  app.use("/evidence-bundles", makeEvidenceBundleTestRouter());
+}
+
 const server = await createX402Server({
   environment: "production",
   payToConfig: {
