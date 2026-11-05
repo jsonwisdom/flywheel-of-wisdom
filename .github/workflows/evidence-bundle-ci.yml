@@ -1,0 +1,23 @@
+name: Evidence Bundle Funds-Disabled CI
+on:
+  push:
+    branches:
+      - feature/evidence-bundle-order-gate
+  pull_request:
+    paths:
+      - 'src/evidence-bundles/**'
+      - 'tests/evidence-bundle-order.test.mjs'
+      - '.github/workflows/evidence-bundle-ci.yml'
+      - 'server.ts'
+permissions:
+  contents: read
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run isolated funds-disabled evidence bundle tests
+        run: node --test tests/evidence-bundle-order.test.mjs
