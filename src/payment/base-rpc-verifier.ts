@@ -8,7 +8,7 @@ import {
   isTxHash,
   replayHash,
   type PaymentEvidenceV1,
-} from "./payment-evidence";
+} from "./payment-evidence.js";
 
 export type RpcReceiptLog = {
   address: string;
@@ -18,6 +18,7 @@ export type RpcReceiptLog = {
 };
 
 export type RpcReceipt = {
+  transactionHash?: string;
   status: string | number;
   blockNumber: string | number;
   logs: RpcReceiptLog[];
@@ -175,3 +176,4 @@ export async function verifySettlementTx(
   };
   return { state: "PAYMENT_RECEIVED_PENDING_RECONCILIATION", reason: "ALL_CHECKS_PASS", evidence };
 }
+

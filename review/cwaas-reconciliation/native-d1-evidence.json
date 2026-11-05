@@ -1,0 +1,52 @@
+{
+  "observed_at": "2026-11-05T17:03:00.101Z",
+  "scope": "isolated remote D1 SQL only; synthetic order and receipt fixtures; no facilitator or Base network call",
+  "database_id": "226ef881-d783-4115-bd78-958c0f7716c1",
+  "checks": [
+    {
+      "name": "conditional_claim",
+      "verdict": "PASS"
+    },
+    {
+      "name": "repeated_claim_no_mutation",
+      "verdict": "PASS"
+    },
+    {
+      "name": "duplicate_transfer_rejected",
+      "verdict": "PASS"
+    },
+    {
+      "name": "duplicate_conflict_preserves_row",
+      "verdict": "PASS"
+    },
+    {
+      "name": "wrong_version_no_mutation",
+      "verdict": "PASS"
+    },
+    {
+      "name": "concurrent_claim_exactly_once",
+      "verdict": "PASS",
+      "detail": [
+        1,
+        0
+      ]
+    },
+    {
+      "name": "immutable_version_rejected",
+      "verdict": "PASS"
+    },
+    {
+      "name": "unpaid_delivery_rejected",
+      "verdict": "PASS"
+    },
+    {
+      "name": "native_integrity",
+      "verdict": "PASS"
+    },
+    {
+      "name": "foreign_keys",
+      "verdict": "PASS"
+    }
+  ],
+  "fixture_deleted": true
+}
