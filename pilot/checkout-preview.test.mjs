@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import worker, {simulate} from './checkout-preview.mjs';
+const req=(path, method='GET')=>new Request('https://pilot.example.test'+path,{method});
+test('preview presents disabled payment notice',async()=>{const r=await worker.fetch(req('/'));assert.equal(r.status,200);assert.match(await r.text(),/Checkout state: OFF/)});
+test('explicit payment routes disabled',async()=>{for(const p of ['/api/payment','/api/order','/api/checkout']){const r=await worker.fetch(req(p));assert.equal(r.status,503)}});
+test('POST cannot create orders',async()=>{const r=await worker.fetch(req('/api/order','POST'));assert.equal(r.status,405)});
+test('status never promises paid checkout',async()=>{const x=await (await worker.fetch(req('/api/status'))).json();assert.equal(x.checkout_enabled,false);assert.equal(x.real_orders_enabled,false)});
+test('synthetic lifecycle reconciles without transaction hash',async()=>{const x=await simulate();assert.equal(x.reconciled,true);assert.equal(x.real_payment,false);assert.equal(x.fake_settlement.transaction_hash,null);assert.match(x.report_sha256,/^[0-9a-f]{64}$/)});
+test('repeatable synthetic digest',async()=>{const a=await simulate(),b=await simulate();assert.equal(a.report_sha256,b.report_sha256)});
+test('no 402 generated from preview',async()=>{for(const p of ['/','/api/status','/api/simulate','/api/checkout']){const r=await worker.fetch(req(p));assert.notEqual(r.status,402)}});
