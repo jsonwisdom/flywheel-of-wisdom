@@ -1,0 +1,31 @@
+name: CWaaS reconciliation review
+on:
+  push:
+    branches: [review/cwaas-reconciliation-20261105]
+  pull_request:
+    paths:
+      - 'review/cwaas-reconciliation/**'
+      - 'src/payment/base-rpc-verifier.ts'
+      - '.github/workflows/cwaas-reconciliation-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install isolated type-check tools
+        run: npm install --prefix "$RUNNER_TEMP/cwaas-ts" --ignore-scripts --no-audit --no-fund typescript@5.6.3 @types/node@22.15.0
+      - name: Type-check reconciliation and existing verifier
+        run: >-
+          "$RUNNER_TEMP/cwaas-ts/node_modules/.bin/tsc"
+          --target es2022 --module node16 --moduleResolution node16 --strict
+          --skipLibCheck --noEmit --types node
+          --typeRoots "$RUNNER_TEMP/cwaas-ts/node_modules/@types"
+          review/cwaas-reconciliation/reconcile.ts
+      - name: Test with actual staging schema and synthetic facilitator/RPC
+        run: node review/cwaas-reconciliation/run-tests.mjs
