@@ -1,0 +1,207 @@
+[
+  {
+    "name": "pass-fixture-micro-1",
+    "file": "fixtures/pass-fixture-micro-1.json",
+    "expected": "PASS"
+  },
+  {
+    "name": "pass-fixture-audit-89",
+    "file": "fixtures/pass-fixture-audit-89.json",
+    "expected": "PASS"
+  },
+  {
+    "name": "pass-fixture-audit-99",
+    "file": "fixtures/pass-fixture-audit-99.json",
+    "expected": "PASS"
+  },
+  {
+    "name": "wrong-amount",
+    "file": "fixtures/wrong-amount.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "wrong-recipient",
+    "file": "fixtures/wrong-recipient.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "unapproved-version",
+    "file": "fixtures/unapproved-version.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "empty-acceptance",
+    "file": "fixtures/empty-acceptance.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "changed-scope",
+    "file": "fixtures/changed-scope.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "bool-is-not-amount",
+    "file": "fixtures/bool-is-not-amount.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "fractional-atomic-amount",
+    "file": "fixtures/fractional-atomic-amount.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "amount-string",
+    "file": "fixtures/amount-string.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "zero-recipient",
+    "file": "fixtures/zero-recipient.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "invalid-deadline",
+    "file": "fixtures/invalid-deadline.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "timezone-missing",
+    "file": "fixtures/timezone-missing.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "activation-spoof",
+    "file": "fixtures/activation-spoof.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "empty-description",
+    "file": "fixtures/empty-description.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "unsupported-network",
+    "file": "fixtures/unsupported-network.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "micro-price-on-audit",
+    "file": "fixtures/micro-price-on-audit.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "99-network-unset",
+    "file": "fixtures/99-network-unset.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "unpinned-version",
+    "file": "fixtures/unpinned-version.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "proof-flag-in-terms",
+    "file": "fixtures/proof-flag-in-terms.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "duplicate-criterion",
+    "file": "fixtures/duplicate-criterion.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-schema_version",
+    "file": "fixtures/null-schema_version.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-mode",
+    "file": "fixtures/null-mode.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-product_id",
+    "file": "fixtures/null-product_id.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-product_version",
+    "file": "fixtures/null-product_version.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-description",
+    "file": "fixtures/null-description.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-price",
+    "file": "fixtures/null-price.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-price-asset",
+    "file": "fixtures/null-price-asset.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-price-amount_atomic",
+    "file": "fixtures/null-price-amount_atomic.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-price-network",
+    "file": "fixtures/null-price-network.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-approved_recipient",
+    "file": "fixtures/null-approved_recipient.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-delivery",
+    "file": "fixtures/null-delivery.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-delivery-artifact_or_service",
+    "file": "fixtures/null-delivery-artifact_or_service.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-delivery-acceptance_criteria",
+    "file": "fixtures/null-delivery-acceptance_criteria.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-delivery-delivery_method",
+    "file": "fixtures/null-delivery-delivery_method.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-delivery-deadline",
+    "file": "fixtures/null-delivery-deadline.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-refund_and_failure_terms",
+    "file": "fixtures/null-refund_and_failure_terms.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-terms_approval_evidence",
+    "file": "fixtures/null-terms_approval_evidence.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-activation_authorization",
+    "file": "fixtures/null-activation_authorization.json",
+    "expected": "FAIL"
+  },
+  {
+    "name": "null-criterion-description",
+    "file": "fixtures/null-criterion-description.json",
+    "expected": "FAIL"
+  }
+]

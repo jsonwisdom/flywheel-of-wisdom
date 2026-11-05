@@ -1,0 +1,56 @@
+test_ambiguous_catalog_rejected (test_terms.TermsTests.test_ambiguous_catalog_rejected) ... ok
+test_candidate_cannot_supply_catalog (test_terms.TermsTests.test_candidate_cannot_supply_catalog) ... ok
+test_canonical_hash_independent_of_key_order (test_terms.TermsTests.test_canonical_hash_independent_of_key_order) ... ok
+test_duplicate_json_keys_rejected (test_terms.TermsTests.test_duplicate_json_keys_rejected) ... ok
+test_fixture_99_network_unset (test_terms.TermsTests.test_fixture_99_network_unset) ... ok
+test_fixture_activation_spoof (test_terms.TermsTests.test_fixture_activation_spoof) ... ok
+test_fixture_amount_string (test_terms.TermsTests.test_fixture_amount_string) ... ok
+test_fixture_bool_is_not_amount (test_terms.TermsTests.test_fixture_bool_is_not_amount) ... ok
+test_fixture_changed_scope (test_terms.TermsTests.test_fixture_changed_scope) ... ok
+test_fixture_duplicate_criterion (test_terms.TermsTests.test_fixture_duplicate_criterion) ... ok
+test_fixture_empty_acceptance (test_terms.TermsTests.test_fixture_empty_acceptance) ... ok
+test_fixture_empty_description (test_terms.TermsTests.test_fixture_empty_description) ... ok
+test_fixture_fractional_atomic_amount (test_terms.TermsTests.test_fixture_fractional_atomic_amount) ... ok
+test_fixture_invalid_deadline (test_terms.TermsTests.test_fixture_invalid_deadline) ... ok
+test_fixture_micro_price_on_audit (test_terms.TermsTests.test_fixture_micro_price_on_audit) ... ok
+test_fixture_null_activation_authorization (test_terms.TermsTests.test_fixture_null_activation_authorization) ... ok
+test_fixture_null_approved_recipient (test_terms.TermsTests.test_fixture_null_approved_recipient) ... ok
+test_fixture_null_criterion_description (test_terms.TermsTests.test_fixture_null_criterion_description) ... ok
+test_fixture_null_delivery (test_terms.TermsTests.test_fixture_null_delivery) ... ok
+test_fixture_null_delivery_acceptance_criteria (test_terms.TermsTests.test_fixture_null_delivery_acceptance_criteria) ... ok
+test_fixture_null_delivery_artifact_or_service (test_terms.TermsTests.test_fixture_null_delivery_artifact_or_service) ... ok
+test_fixture_null_delivery_deadline (test_terms.TermsTests.test_fixture_null_delivery_deadline) ... ok
+test_fixture_null_delivery_delivery_method (test_terms.TermsTests.test_fixture_null_delivery_delivery_method) ... ok
+test_fixture_null_description (test_terms.TermsTests.test_fixture_null_description) ... ok
+test_fixture_null_mode (test_terms.TermsTests.test_fixture_null_mode) ... ok
+test_fixture_null_price (test_terms.TermsTests.test_fixture_null_price) ... ok
+test_fixture_null_price_amount_atomic (test_terms.TermsTests.test_fixture_null_price_amount_atomic) ... ok
+test_fixture_null_price_asset (test_terms.TermsTests.test_fixture_null_price_asset) ... ok
+test_fixture_null_price_network (test_terms.TermsTests.test_fixture_null_price_network) ... ok
+test_fixture_null_product_id (test_terms.TermsTests.test_fixture_null_product_id) ... ok
+test_fixture_null_product_version (test_terms.TermsTests.test_fixture_null_product_version) ... ok
+test_fixture_null_refund_and_failure_terms (test_terms.TermsTests.test_fixture_null_refund_and_failure_terms) ... ok
+test_fixture_null_schema_version (test_terms.TermsTests.test_fixture_null_schema_version) ... ok
+test_fixture_null_terms_approval_evidence (test_terms.TermsTests.test_fixture_null_terms_approval_evidence) ... ok
+test_fixture_pass_fixture_audit_89 (test_terms.TermsTests.test_fixture_pass_fixture_audit_89) ... ok
+test_fixture_pass_fixture_audit_99 (test_terms.TermsTests.test_fixture_pass_fixture_audit_99) ... ok
+test_fixture_pass_fixture_micro_1 (test_terms.TermsTests.test_fixture_pass_fixture_micro_1) ... ok
+test_fixture_proof_flag_in_terms (test_terms.TermsTests.test_fixture_proof_flag_in_terms) ... ok
+test_fixture_timezone_missing (test_terms.TermsTests.test_fixture_timezone_missing) ... ok
+test_fixture_unapproved_version (test_terms.TermsTests.test_fixture_unapproved_version) ... ok
+test_fixture_unpinned_version (test_terms.TermsTests.test_fixture_unpinned_version) ... ok
+test_fixture_unsupported_network (test_terms.TermsTests.test_fixture_unsupported_network) ... ok
+test_fixture_wrong_amount (test_terms.TermsTests.test_fixture_wrong_amount) ... ok
+test_fixture_wrong_recipient (test_terms.TermsTests.test_fixture_wrong_recipient) ... ok
+test_fixture_zero_recipient (test_terms.TermsTests.test_fixture_zero_recipient) ... ok
+test_nonfinite_json_rejected (test_terms.TermsTests.test_nonfinite_json_rejected) ... ok
+test_pin_cannot_declare_delivery_or_payment (test_terms.TermsTests.test_pin_cannot_declare_delivery_or_payment) ... ok
+test_pin_validated_terms (test_terms.TermsTests.test_pin_validated_terms) ... ok
+test_schema_validity_does_not_approve_price (test_terms.TermsTests.test_schema_validity_does_not_approve_price) ... ok
+test_scope_mutation_changes_hash_and_breaks_pin (test_terms.TermsTests.test_scope_mutation_changes_hash_and_breaks_pin) ... ok
+test_stale_pin_rejected (test_terms.TermsTests.test_stale_pin_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 51 tests in 0.007s
+
+OK

@@ -1,0 +1,23 @@
+{
+  "schema": "cwaas.progressive_validation_receipt.v1",
+  "observed_at": "2026-11-05T17:34:53.774638+00:00",
+  "test_count": 85,
+  "original_test_count": 51,
+  "new_test_count": 34,
+  "verdict": "PASS",
+  "mode": "SYNTHETIC_ONLY",
+  "catalog_price_gate": "PASS",
+  "commercial_binding_readiness": "FAIL",
+  "missing_catalog_binding": [
+    "product_version",
+    "terms_sha256",
+    "delivery_acceptance_criteria",
+    "settlement_rail",
+    "approved_recipient",
+    "commercial_approval_evidence"
+  ],
+  "original_package_sha256": "5f25cb62cdecfb874f738cd072523be0d0e54c0580414125e27b2b54122c2ec7",
+  "real_payment_claim": false,
+  "real_delivery_claim": false,
+  "real_profit_claim": false
+}
