@@ -1,0 +1,24 @@
+{
+  "receipt_type": "JSONWISDOM_STORE_DIRECTORIES_FIRST",
+  "version": "0.1",
+  "repository": "jsonwisdom/flywheel-of-wisdom",
+  "branch": "agent/store-merchant-center-5624520187-v0-1",
+  "operator_identity": "jaywisdom.eth",
+  "directory_commits": [
+    { "path": "store/products/", "commit": "cd56ef3466dfdacdf4aa4ed104611cf910805a55" },
+    { "path": "store/schemas/", "commit": "103629a6627461cc37e44d8e78b5fb3c089d3348" },
+    { "path": "store/receipts/", "commit": "c0b8ec1f1220a0f83cf644aa3d04cf13ef6e7e4d" },
+    { "path": "store/scripts/", "commit": "dd52866d22e4cb0c9555808f7f14d4f8ffe7b453" },
+    { "path": "store/releases/", "commit": "6d19ea761675b998b5bf22d219ba27b0dae8c4d1" },
+    { "path": "store/catalog/", "commit": "4f9b49749a385f42ae3a93b6711da6dbea1ec81b" },
+    { "path": "store/identity/jaywisdom.eth/", "commit": "aa58807a285cfbd7606e081fe081a9e1389e79da" }
+  ],
+  "directory_gate_completed_at_commit": "aa58807a285cfbd7606e081fe081a9e1389e79da",
+  "first_post_gate_content_commit": "93e543e4c5c23c13aed4cfefba04ac0fca04d283",
+  "ordering": "DIRECTORIES_BEFORE_CONTENT",
+  "merchant_center_id": "5624520187",
+  "production_deployment": false,
+  "payment_activation": false,
+  "ens_mutation_performed": false,
+  "authority_created": false
+}

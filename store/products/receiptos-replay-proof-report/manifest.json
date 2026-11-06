@@ -1,0 +1,21 @@
+{
+  "schema_version": "product-manifest.v0.1",
+  "product_id": "receiptos-replay-proof-report",
+  "name": "ReceiptOS Replay-Proof Report",
+  "description": "Manual receipt and replay report service. No automated checkout is asserted by this store build.",
+  "operator_identity": "jaywisdom.eth",
+  "price": {
+    "amount_usd": 300,
+    "mode": "manual_service"
+  },
+  "commercial_state": "MANUAL_SERVICE_ONLY",
+  "payment_processor_live": false,
+  "artifact_bundle_state": "NOT_RELEASED",
+  "checksums": [],
+  "production_deployment": false,
+  "authority_created": false,
+  "notes": [
+    "Manual service status is preserved from the current store branch.",
+    "No automated rights, truth, authority, or verification result is purchased by payment."
+  ]
+}

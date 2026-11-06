@@ -1,0 +1,18 @@
+{
+  "schema_version": "store-operator.v0.1",
+  "identity": "jaywisdom.eth",
+  "role": "STORE_OPERATOR_ROOT_LABEL",
+  "binding_scope": "JSONWisdom Store metadata and presentation",
+  "ens_mutation_performed": false,
+  "wallet_control_verified_in_this_build": false,
+  "payment_authority": false,
+  "deployment_authority": false,
+  "merchant_center_authority_inferred": false,
+  "authority_created": false,
+  "rules": [
+    "IDENTITY_LABEL != WALLET_CONTROL",
+    "WALLET_CONTROL != PAYMENT_AUTHORITY",
+    "MERCHANT_CENTER_ID != PAYMENT_PROCESSOR",
+    "GITHUB_COMMIT != PRODUCTION_DEPLOYMENT"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jsonwisdom.example/schemas/product-manifest.v0.1.schema.json",
+  "title": "JSONWisdom Store Product Manifest v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "product_id",
+    "name",
+    "operator_identity",
+    "commercial_state",
+    "artifact_bundle_state",
+    "production_deployment",
+    "authority_created"
+  ],
+  "properties": {
+    "schema_version": { "const": "product-manifest.v0.1" },
+    "product_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "operator_identity": { "const": "jaywisdom.eth" },
+    "price": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount_usd", "mode"],
+      "properties": {
+        "amount_usd": { "type": "number", "minimum": 0 },
+        "mode": { "enum": ["synthetic_manual_test", "manual_service", "not_for_sale"] }
+      }
+    },
+    "commercial_state": {
+      "enum": ["NOT_LIVE_CHECKOUT", "MANUAL_SERVICE_ONLY", "NOT_FOR_SALE"]
+    },
+    "payment_processor_live": { "type": "boolean" },
+    "artifact_bundle_state": {
+      "enum": ["NOT_RELEASED", "DRAFT", "RELEASED"]
+    },
+    "checksums": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "production_deployment": { "type": "boolean" },
+    "authority_created": { "type": "boolean" },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  }
+}

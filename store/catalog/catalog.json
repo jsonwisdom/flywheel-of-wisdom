@@ -1,0 +1,49 @@
+{
+  "schema_version": "jsonwisdom-store-catalog.v0.1",
+  "store_name": "JSONWisdom Store",
+  "operator_identity": "jaywisdom.eth",
+  "merchant_center_id": "5624520187",
+  "canonical_source": {
+    "type": "github",
+    "repository": "jsonwisdom/flywheel-of-wisdom",
+    "root": "store/"
+  },
+  "review_storage": {
+    "type": "google_drive",
+    "folder_name": "JSONWisdom Store",
+    "canonical": false
+  },
+  "products": [
+    {
+      "product_id": "flywheel-of-wisdom",
+      "manifest": "products/flywheel-of-wisdom/manifest.json"
+    },
+    {
+      "product_id": "receiptos-replay-proof-report",
+      "manifest": "products/receiptos-replay-proof-report/manifest.json"
+    }
+  ],
+  "identity_manifest": "identity/jaywisdom.eth/operator.json",
+  "customer_reviews": {
+    "integration_code_present": true,
+    "enrollment_verified": false,
+    "google_generated_store_rating_verified": false
+  },
+  "openai_advisor": {
+    "role": "OPTIONAL_SIDECAR",
+    "canonical_product_metadata_source": false,
+    "requires_server_side_api_key": true
+  },
+  "production": {
+    "checkout_live": false,
+    "payment_processor_live": false,
+    "deployment_verified": false
+  },
+  "rules": [
+    "GITHUB = CANONICAL_METADATA",
+    "DRIVE = REVIEW_STORAGE",
+    "PAYMENT != TRUTH",
+    "CODE_PRESENT != PROGRAM_ENABLED",
+    "CI_SUCCESS != PRODUCTION_DEPLOYMENT"
+  ]
+}

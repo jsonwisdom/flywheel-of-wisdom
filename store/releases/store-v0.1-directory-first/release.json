@@ -1,0 +1,24 @@
+{
+  "release_id": "store-v0.1-directory-first",
+  "store_name": "JSONWisdom Store",
+  "operator_identity": "jaywisdom.eth",
+  "merchant_center_id": "5624520187",
+  "repository": "jsonwisdom/flywheel-of-wisdom",
+  "pull_request": 1,
+  "release_state": "DRAFT_UNMERGED",
+  "canonical_metadata_root": "store/",
+  "review_storage": "Google Drive/JSONWisdom Store",
+  "directory_receipt": "receipts/directories-first-v0.1.json",
+  "products": [
+    "products/flywheel-of-wisdom/manifest.json",
+    "products/receiptos-replay-proof-report/manifest.json"
+  ],
+  "verification_command": "npm run verify:store",
+  "customer_reviews_enrollment_verified": false,
+  "google_store_rating_verified": false,
+  "payment_processor_live": false,
+  "production_deployment": false,
+  "ens_mutation_performed": false,
+  "authority_created": false,
+  "promotion_gate": "HOLD_FOR_HUMAN_REVIEW_AND_PRODUCTION_EVIDENCE"
+}
