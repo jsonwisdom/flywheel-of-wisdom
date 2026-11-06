@@ -1,0 +1,49 @@
+name: x402 mainnet unpaid smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: x402-mainnet-smoke
+  cancel-in-progress: false
+
+jobs:
+  unpaid-402:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    environment: x402-mainnet
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: npm install
+
+      - name: Verify configured destination
+        shell: pwsh
+        env:
+          X402_PAY_TO: "0xa380552a27b0a5a2874ea7aa52cac09f542002e8"
+        run: |
+          $expected = "0xa380552a27b0a5a2874ea7aa52cac09f542002e8"
+          if ($env:X402_PAY_TO -ne $expected) {
+            throw "X402 pay-to destination mismatch."
+          }
+
+      - name: Start rail and assert unpaid challenge
+        shell: pwsh
+        env:
+          CDP_API_KEY_ID: ${{ secrets.CDP_API_KEY_ID }}
+          CDP_API_KEY_SECRET: ${{ secrets.CDP_API_KEY_SECRET }}
+          X402_PAY_TO: "0xa380552a27b0a5a2874ea7aa52cac09f542002e8"
+          PORT: "8402"
+        run: .\scripts\smoke-mainnet.ps1
