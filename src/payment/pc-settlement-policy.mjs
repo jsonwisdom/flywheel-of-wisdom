@@ -30,7 +30,7 @@ export function assessPcSettlementEvidence({tx_hash,chain_id,token_address,amoun
    return {status:"UNKNOWN",reason:"INDEPENDENT_CHAIN_PROOF_MISSING"};
  if (request_bound!==true||durable_booking!==true)
    return {status:"UNKNOWN",reason:"REQUEST_BINDING_OR_DURABLE_RECONCILIATION_MISSING"};
- return {status:"PASS",reason:"CANDIDATE_FIELDS_MATCH_REQUIRES_TRUSTED_PROVENANCE"};
+ return {status:"UNKNOWN",reason:"FIELDS_MATCH_BUT_NO_INDEPENDENT_RPC_OR_REQUEST_PROVENANCE"};
 }
 
 /**
