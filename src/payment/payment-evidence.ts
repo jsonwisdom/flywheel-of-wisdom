@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 export const PAYMENT_EVIDENCE_SCHEMA = "payment_evidence.v1" as const;
 export const CHAIN_ID_BASE = 8453;
 export const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
-export const PAY_TO_DEFAULT = "0xa380552a27b0a5a2874ea7aa52cac09f542002e8" as const;
+/** Intended payee only. No custody, signature, or transfer is established. */
+export const PAY_TO_DEFAULT = "0x65891F97db01C8fC9F76f4DFE65Bd44F8261f1B0" as const;
 export const AMOUNT_1_USDC = "1000000" as const;
 export const ERC20_TRANSFER_TOPIC0 =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" as const;
