@@ -42,6 +42,9 @@ jobs:
       - name: Test CI-FIRST PC wallet policy and audit guards (no funds)
         run: node --test scripts/audit/pc-settlement-policy.test.mjs
 
+      - name: Smoke-test read-only PC audit HTTP service and reject paid endpoints
+        run: node scripts/audit/pc-readonly-http-smoke.mjs
+
       - name: Test isolated Base verification + reconciliation scenarios (MOCK, no funds)
         run: npx --no-install tsx src/payment/payment-rail.test.ts
 
