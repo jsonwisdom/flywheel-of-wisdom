@@ -15,12 +15,13 @@ No historical payment, receipt, or wallet ownership has been reassigned.
 
 ## Current production-release state
 
-**HOLD.** The legacy `server.ts` cannot start a production facilitator in this branch:
-`holdLegacyMainnetLaunch()` runs before `createX402Server()`.
-This protects customers from a successful HTTP response with `settlement_tx:null` and from
-being charged before durable per-request reconciliation and independent Base validation exist.
-The paid routes have no successful delivery path in this candidate; DO NOT disable this
-guard merely to get HTTP 200.
+**HOLD.** `server.ts` starts a read-only proof service without importing or initializing any
+x402 facilitator or charging middleware. `GET /healthz` and
+`GET /ci-first/settlement-config` disclose the intended receiver and
+explicitly report payment/custody UNKNOWN. Both `GET /receipt` and
+`GET /knowledge` return HTTP **503** until durable per-request reconciliation and
+independent Base validation are implemented. DO NOT add payment middleware to
+this candidate merely to get HTTP 200.
 
 ## Reproducible CI
 
