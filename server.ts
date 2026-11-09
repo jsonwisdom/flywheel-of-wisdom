@@ -9,14 +9,14 @@ import "dotenv/config";
 import express from "express";
 import { createX402Server } from "@coinbase/cdp-sdk/x402";
 import { paymentMiddlewareFromHTTPServer } from "@x402/express";
-import { deliverPaidKnowledge, type PaidObjectType } from "./src/delivery/paid-knowledge.js";
+import { requirePcPayee, holdLegacyMainnetLaunch } from "./src/payment/pc-settlement-policy.mjs";
 
-const PAY_TO = (process.env.X402_PAY_TO ??
-  "0xa380552a27b0a5a2874ea7aa52cac09f542002e8") as `0x${string}`;
+const PAY_TO = requirePcPayee(process.env.X402_PAY_TO);
 
-if (!PAY_TO.startsWith("0x") || PAY_TO.length !== 42) {
-  throw new Error(`Invalid X402_PAY_TO: ${PAY_TO}`);
-}
+// CRITICAL: this legacy Express handler does not yet persist and
+// independently replay each per-request settlement. Stop before creating a
+// live facilitator or middleware that could debit a customer.
+holdLegacyMainnetLaunch();
 
 const app = express();
 app.use(express.json());
@@ -45,39 +45,29 @@ const server = await createX402Server({
 
 app.use(paymentMiddlewareFromHTTPServer(server));
 
-function parsePaidType(raw: unknown): PaidObjectType {
-  if (raw === "document" || raw === "receipt" || raw === "answer") return raw;
-  return "answer";
-}
-
+// CI-FIRST: no paid response may assert success from middleware data alone.
+// Mainnet is disabled at startup. These handlers are intentionally denied
+// even if the startup HOLD is later refactored without full reconciliation.
 app.get("/receipt", (_req, res) => {
-  const settlement = (res.locals as any).payment?.settlement ?? null;
-  res.json({
-    ok: true,
-    product: "Wisdom Receipt V1",
-    price_usd: 1.0,
-    network: "base-mainnet",
+  res.status(503).json({
+    ok: false,
+    status: "PENDING_PAYMENT_GATE",
+    reason: "DURABLE_BASE_SETTLEMENT_PROOF_NOT_READY",
+    network: "eip155:8453",
     pay_to: PAY_TO,
-    ens_label: "jaywisdom.base.eth",
-    settlement_tx: settlement?.transaction ?? settlement?.txHash ?? null,
-    note: "Payment verified by CDP Facilitator. ens_label ≠ operator identity.",
+    authority_created: false,
   });
 });
 
-app.get("/knowledge", (req, res) => {
-  const settlement = (res.locals as any).payment?.settlement ?? null;
-  const objectId = typeof req.query.object_id === "string" ? req.query.object_id : "answer:default";
-  const body =
-    typeof req.query.q === "string" && req.query.q.trim()
-      ? req.query.q
-      : "KnowledgeObject v0.1 default body. Replace via ?q=";
-  const result = deliverPaidKnowledge({
-    object_id: objectId,
-    body,
-    type: parsePaidType(req.query.type),
-    settlement_tx: settlement?.transaction ?? settlement?.txHash ?? null,
+app.get("/knowledge", (_req, res) => {
+  res.status(503).json({
+    ok: false,
+    status: "PENDING_PAYMENT_GATE",
+    reason: "REQUEST_BOUND_RECEIPT_AND_RESOURCE_DELIVERY_NOT_READY",
+    network: "eip155:8453",
+    pay_to: PAY_TO,
+    authority_created: false,
   });
-  res.json({ ok: true, ...result });
 });
 
 const PORT = Number(process.env.PORT ?? 8402);
