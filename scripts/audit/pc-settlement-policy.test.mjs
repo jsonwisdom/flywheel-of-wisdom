@@ -25,9 +25,9 @@ test("no chain receipt or reconciliation is UNKNOWN",()=>{
  }
  assert.equal(assessPcSettlementEvidence({...pass,receipt_status:0}).status,"UNKNOWN");
 });
-test("all candidate predicates match but do not authenticate source",()=>{
- assert.equal(assessPcSettlementEvidence(pass).status,"PASS");
- assert.match(assessPcSettlementEvidence(pass).reason,/TRUSTED_PROVENANCE/);
+test("self-reported matching fields NEVER independently certify settlement",()=>{
+ assert.equal(assessPcSettlementEvidence(pass).status,"UNKNOWN");
+ assert.match(assessPcSettlementEvidence(pass).reason,/NO_INDEPENDENT_RPC/);
 });
 test("legacy paid route MUST stop before charging",()=>{
  assert.throws(()=>holdLegacyMainnetLaunch(),/CI_FIRST_HOLD/);
