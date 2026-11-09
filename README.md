@@ -1,55 +1,52 @@
-# Flywheel of Wisdom — x402 payment rail (Base mainnet)
+# Flywheel of Wisdom — CI-FIRST PC Settlement Candidate (Base)
 
-Real **$1 USDC** payments on **Base mainnet**, settled to
-`jaywisdom.base.eth` → `0xa380552a27b0a5a2874ea7aa52cac09f542002e8`.
+**Date: 2026-11-09 · Source candidate only · CANON=false · AUTHORITY_CREATED=false**
 
-The synthetic `MockPaymentAdapter` is gone. This is version 2: real
-payments only.
+Intended receiver: **Computer Wisdom PC** (display label only):
+`0x65891F97db01C8fC9F76f4DFE65Bd44F8261f1B0`
 
-## Flow
+Network: Base mainnet (`eip155:8453`). Native Circle USDC contract:
+`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+and the nominal $1 price is 1,000,000 atomic USDC units.
 
-```text
-GET /receipt  →  402 Payment Required (price, USDC, Base, payTo)
-       ↓
-client signs gasless USDC authorization
-       ↓
-CDP Facilitator verifies + settles on Base (~1s)
-       ↓
-200 OK + receipt with real settlement tx hash
-```
+This requested receiver is **not** an ENS resolution or proof of private-key control.
+The historical `jaywisdom.base.eth` → `0xA380…02E8` wallet is DISTINCT.
+No historical payment, receipt, or wallet ownership has been reassigned.
 
-## Setup (PowerShell)
+## Current production-release state
 
-```powershell
-.\scripts\setup-mainnet.ps1
-# edit .env → CDP_API_KEY_ID, CDP_API_KEY_SECRET
-npm start
-.\scripts\test-402.ps1    # expect 402
-```
+**HOLD.** The legacy `server.ts` cannot start a production facilitator in this branch:
+`holdLegacyMainnetLaunch()` runs before `createX402Server()`.
+This protects customers from a successful HTTP response with `settlement_tx:null` and from
+being charged before durable per-request reconciliation and independent Base validation exist.
+The paid routes have no successful delivery path in this candidate; DO NOT disable this
+guard merely to get HTTP 200.
 
-Needs **Node 22+**. Get a CDP API key at
-https://portal.cdp.coinbase.com/api-keys/secret.
+## Reproducible CI
 
-## Test the 402 challenge
+GitHub Actions uses immutable Action SHAs, an explicit `ubuntu-24.04` runner,
+Node `22.16.0`, Python `3.13.9`, and **three committed npm lockfiles** with `npm ci`.
+It runs Python synthetic replay, x402 mock lifecycle, the Base verifier mocks, and the
+PC receiver/settlement policy tests. The Python direct dependency `jsonschema`
+is pinned; transitive wheel hashes and OS image digest are not yet pinned.
 
-```powershell
-curl -i http://localhost:8402/receipt
-# HTTP/1.1 402 Payment Required
-```
+## Independent settlement release criteria
 
-## Pay once (real funds)
+1. Prove active custody/signing access for the exact PC receiver using a
+   human-approved, nonce-bound signature; never upload seed phrases.
+2. Identify a publicly reachable paid service and prove unpaid `402` challenge
+   terms (correct payTo, chain, token, price) without sending payment.
+3. Persist request/response content hash and one-time nonce in a durable ledger
+   BEFORE payment; reject duplicate/replayed transaction bookings across restarts.
+4. Only through an x402 after-settle lifecycle, bind a real settlement hash to
+   the persisted intent, then independently verify Base receipt status=1,
+   native USDC Transfer to the PC address, correct exact amount, and confirmations.
+5. Re-read the immutable receipt independently, hash the delivered resource
+   bytes, verify response/tx/intention linkage and execute rollback and failure tests.
+6. Only then may a separate reviewed PR enable mainnet processing. HTTP 402,
+   a successful synthetic test, or a non-null tx hash alone does not pass.
 
-Use any x402-compatible client (Coinbase Wallet, Base MCP, or
-`@x402/fetch`) pointed at `http://localhost:8402/receipt` with a max
-payment of `$1.00`. The deposit lands at jaywisdom.base.eth.
+No funded transaction, recipient change in any deployed Worker, Coinbase transfer,
+wallet signing, PR merge, or live production settlement is performed by this PR.
 
-## What's here
-
-- `server.ts` — Express + CDP x402 server, production/mainnet
-- `scripts/setup-mainnet.ps1` — one-shot install + env bootstrap
-- `scripts/test-402.ps1` — unpaid probe, asserts 402
-- `.env.example` — required secrets
-
-The Python receipt schema, replay-id, and share-artifact logic in
-`flywheel.py` are unchanged — this rail is the payment layer that feeds
-them real settlement hashes instead of `MOCK-` references.
+See `docs/maintenance/CI_FIRST_PC_SETTLEMENT_GATES_2026-11-09.md`.
