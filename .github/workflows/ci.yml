@@ -42,6 +42,15 @@ jobs:
       - name: Test CI-FIRST PC wallet policy and audit guards (no funds)
         run: node --test scripts/audit/pc-settlement-policy.test.mjs
 
+      - name: Verify read-only PC transfer against dual independent mock RPC views
+        run: |
+          node --check src/payment/pc-base-receipt-verifier.mjs
+          node --check scripts/audit/verify-pc-base-transfer.mjs
+          node --test scripts/audit/pc-base-receipt-verifier.test.mjs
+
+      - name: Verify append-only local PC intent and transfer journal (MOCK, no funds)
+        run: node --experimental-sqlite --test scripts/audit/pc-settlement-ledger.test.mjs
+
       - name: Smoke-test read-only PC audit HTTP service and reject paid endpoints
         run: node scripts/audit/pc-readonly-http-smoke.mjs
 
