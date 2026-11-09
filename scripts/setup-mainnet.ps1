@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "== Flywheel x402 mainnet setup ==" -ForegroundColor Cyan
+Write-Host "== CI-FIRST PC candidate install (payments DISABLED) ==" -ForegroundColor Cyan
 
 if (-not (Test-Path ".env")) {
   Copy-Item ".env.example" ".env"
@@ -21,10 +21,10 @@ if ([int]$nodeVer -lt 22) { throw "Need Node 22+, found $nodeVer" }
 if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { throw "npm not found" }
 
 Write-Host "Installing dependencies..."
-npm install
+npm ci --ignore-scripts --no-audit --no-fund
 
 Write-Host ""
 Write-Host "Next:" -ForegroundColor Green
 Write-Host "  1. Edit .env with your CDP API key"
-Write-Host "  2. npm start"
+Write-Host "  2. CI-FIRST HOLD: do not start mainnet or pay; inspect release gates in README.md"
 Write-Host "  3. In another terminal: .\scripts\test-402.ps1"
