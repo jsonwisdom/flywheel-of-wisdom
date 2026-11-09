@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Real x402 payment rail for Wisdom Receipts on Base mainnet. Settles to jaywisdom.base.eth.",
+  "description": "CI-FIRST wallet-gated candidate: intended Computer Wisdom PC receiver on Base; mainnet HOLD.",
   "scripts": {
     "start": "tsx server.ts",
     "dev": "tsx watch server.ts",
