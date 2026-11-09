@@ -9,7 +9,7 @@ CAUSE: main server.ts had fallback to historical payee, and could return ok:true
 REPAIRS IN DRAFT BRANCH:
 - Three exact npm lockfiles, npm ci, immutable action pins, explicit OS/Python/Node labels.
 - Main candidate payee and test verifier defaults changed only in source.
-- Strict PC wallet config and fail-closed policy; legacy mainnet facilitator halted before creation to protect payers.
+- Strict PC wallet config and fail-closed policy; server.ts runs read-only /healthz and /ci-first/settlement-config while paid endpoints respond 503. No live facilitator or charging middleware exists in this candidate.
 - Zero-dependency tests for address/chain/token/amount/receipt and fraud/duplicate negative cases.
 - Human-controlled release after independent signature, receipt and durable-resource linkage.
 
