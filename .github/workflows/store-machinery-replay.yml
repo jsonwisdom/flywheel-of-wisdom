@@ -1,0 +1,21 @@
+name: Store Machinery Replay (source-only)
+on:
+  push:
+    paths:
+      - 'store/machinery/**'
+      - '.github/workflows/store-machinery-replay.yml'
+  pull_request:
+    paths:
+      - 'store/machinery/**'
+      - '.github/workflows/store-machinery-replay.yml'
+permissions:
+  contents: read
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test store/machinery/replay.test.mjs
