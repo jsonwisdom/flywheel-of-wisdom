@@ -13,8 +13,12 @@ while (pending.length) {
   const source = readFileSync(file, "utf8");
   const imports = [...source.matchAll(/\bfrom\s*["'](\.{1,2}\/[^"']+)["']/g)];
   for (const [, spec] of imports) {
-    if (!spec.endsWith(".js")) throw new Error("ESM_EXTENSION_REQUIRED: " + file + " -> " + spec);
-    const target = resolve(dirname(file), spec.slice(0, -3) + ".ts");
+    const target = spec.endsWith(".mjs")
+      ? resolve(dirname(file), spec)
+      : spec.endsWith(".js")
+        ? resolve(dirname(file), spec.slice(0, -3) + ".ts")
+        : null;
+    if (!target) throw new Error("ESM_EXTENSION_REQUIRED: " + file + " -> " + spec);
     if (!existsSync(target)) throw new Error("ESM_SOURCE_NOT_FOUND: " + file + " -> " + spec);
     pending.push(target);
   }

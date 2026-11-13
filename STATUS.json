@@ -5,14 +5,16 @@
   "payment_mode": "x402-mainnet",
   "payment_rail": "CDP Facilitator / x402",
   "network": "base-mainnet (eip155:8453)",
-  "pay_to": "0xa380552a27b0a5a2874ea7aa52cac09f542002e8",
-  "pay_to_ens": "jaywisdom.base.eth",
-  "real_wallet_enabled": true,
+  "pay_to": "0x65891F97db01C8fC9F76f4DFE65Bd44F8261f1B0",
+  "real_wallet_enabled": false,
   "mock_adapter_removed": true,
   "knowledge_pipeline": "v0.1-src",
   "tests_passing": 12,
   "replay_verified": true,
   "tamper_detection_verified": true,
   "revenue_usd": 0,
-  "notes": "Knowledge/null/manifest pipeline added under src/. GET /knowledge on same $1 rail. flywheel.py remains synthetic fixture. First real $1 settlement still pending. pay_to_ens is a label not identity. AUTHORITY_CREATED=false."
+  "notes": "CI-FIRST PR #22 candidate only. A380 remains historical Nov 4 receiver; no transfer or recovery inferred. This file is not a deployed configuration or a wallet authority proof. Current source candidate exposes diagnostic routes only; revenue endpoints unavailable in candidate. No production change authorized.",
+  "intended_receiver": "Computer Wisdom PC",
+  "runtime_status": "UNVERIFIED",
+  "pr_candidate_mode": "READ_ONLY"
 }

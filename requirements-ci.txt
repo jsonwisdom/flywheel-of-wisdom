@@ -1,0 +1,3 @@
+# CI-FIRST, 2026-11-09. Direct Python dependency pinned.
+# Transitive dependency wheel hashes and runner-image digest not yet independently locked.
+jsonschema==4.25.1
